@@ -65,5 +65,14 @@ These need a decision; the screens use the choice noted after each one.
 - **Constants exported next to components** (NotebookParts' `PAPERS`) trips the fast-refresh lint. Moved to `options.ts`.
 - **Visual check method that works:** `?screen=<id>` opens a screen directly, and `scratchpad/shoot.ps1` (headless Edge + System.Drawing) builds a contact sheet of several screens.
 
+## 2026-11-11 — Adding routing (React Router)
+- **npm installed React Router 8** (`react-router@^8.5`), not v7. The data-router API is the same: `createBrowserRouter` from `react-router`, but `RouterProvider` comes from **`react-router/dom`**. The package ships its own docs in `node_modules/react-router/docs`; check those rather than relying on memory.
+- **Race between two redirects after sign-in:** the sign-in screen called `navigate(returnTo)` after `signIn()`, but the state change made the `GuestOnly` guard render `<Navigate to="/dashboard">` first, so users never returned to the page they wanted. *Fix:* the guard owns the post-sign-in redirect (it reads `location.state.from`), and the screen only calls `signIn()`.
+- **Overlay URLs shouldn't remount the page underneath:** `/notebooks/:id/settings` and `/library/assets/:id` are *child* routes without a component. The parent screen stays mounted (search text and filters survive opening and closing the drawer) and reads the child params with `useParams()`.
+- **Structure addition not in technical-claude.md:** routing lives in `src/routes/` (router, path builders, guards, route wrappers). The doc's tree has no place for it; `hooks/useAuth`, `hooks/useLinkProps` and `services/authService` follow the doc.
+- **Mock auth:** `services/authService.ts` stores a flag in localStorage until the Django auth endpoints exist. A fresh browser starts signed out, so open `/sign-in` and press Sign in.
+- **Production hosting needs an SPA fallback:** every unknown path must serve `index.html` (Django catch-all view or a static-host rewrite), or deep links like `/notebooks/nb-travel/pages/3` 404 on refresh. The Vite dev and preview servers already do this.
+- **Route testing without a test framework:** `scratchpad/route-test.mjs` drives headless Edge over the DevTools protocol (Node 24's built-in WebSocket). It signs in, clicks through every area and asserts URL, title and content. Final run: 48/48 checks passed.
+
 ## 2026-11-11 — Contrast ratios in design system/claude.md checked
 - I recalculated the WCAG ratios from the HEX values: Green/Cream 5.6, Green/Yellow 4.3, Jasper/Cream 4.3, Jasper/Yellow 3.3, Green/Jasper 1.3. They all match the doc, so no correction is needed.

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { ArrowLeft, Check, Image, KeyRound, Lock, LogIn, LogOut, Mail, MailCheck, Send, Sparkles, User as UserIcon } from 'lucide-react'
 import {
   AuthForm,
@@ -16,19 +17,29 @@ import {
   useToast,
 } from '../../components'
 import { AppPage } from '../shared/AppPage'
+import { useAuth } from '../../hooks/useAuth'
+import { useLinkProps } from '../../hooks/useLinkProps'
+import { paths } from '../../routes/paths'
 import { currentUser, currentUserName } from '../../services/mockData'
 import s from '../shared/screens.module.css'
 
-const noop = () => {}
-
 /* ---------- 1.1 Sign in ---------- */
 export function SignInScreen({ wrongCredentials = false }: { wrongCredentials?: boolean }) {
+  const { signIn } = useAuth()
+  const link = useLinkProps()
   const [email, setEmail] = useState('mira@example.com')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // The GuestOnly guard redirects once signed in (back to the page the user wanted).
+  async function submit() {
+    setLoading(true)
+    await signIn()
+  }
+
   return (
     <AuthLayout accent="welcome back!" title="Sign in to your journal" lead="Pick up where you left off.">
-      <AuthForm onSubmit={() => setLoading(true)}>
+      <AuthForm onSubmit={submit}>
         {wrongCredentials && (
           <Banner kind="error" title="That email and password don’t match">
             Check them and try again, or reset your password.
@@ -38,13 +49,13 @@ export function SignInScreen({ wrongCredentials = false }: { wrongCredentials?: 
         <PasswordField label="Password" autoComplete="current-password" leadingIcon={Lock} value={password} onChange={(e) => setPassword(e.target.value)} />
         <div className={s.rowBetween}>
           <Checkbox label="Keep me signed in" defaultChecked />
-          <TextLink onClick={noop}>Forgot password?</TextLink>
+          <TextLink {...link(paths.forgotPassword)}>Forgot password?</TextLink>
         </div>
         <Button type="submit" variant="primary" icon={LogIn} fullWidth loading={loading}>
           Sign in
         </Button>
         <p className={s.small} style={{ textAlign: 'center' }}>
-          New here? <TextLink onClick={noop}>Create an account</TextLink>
+          New here? <TextLink {...link(paths.signUp)}>Create an account</TextLink>
         </p>
       </AuthForm>
     </AuthLayout>
@@ -53,10 +64,18 @@ export function SignInScreen({ wrongCredentials = false }: { wrongCredentials?: 
 
 /* ---------- 1.2 Create account ---------- */
 export function CreateAccountScreen({ emailTaken = false }: { emailTaken?: boolean }) {
+  const { signIn } = useAuth()
+  const link = useLinkProps()
   const [password, setPassword] = useState('')
+
+  // Signing in triggers the GuestOnly redirect to the dashboard.
+  async function submit() {
+    await signIn()
+  }
+
   return (
     <AuthLayout accent="nice to meet you" title="Start your journal" lead="Make notebooks, stickers and tapes that are all yours.">
-      <AuthForm onSubmit={noop}>
+      <AuthForm onSubmit={submit}>
         <TextField label="Name" autoComplete="name" leadingIcon={UserIcon} defaultValue={currentUserName} />
         <TextField
           label="Email"
@@ -80,7 +99,7 @@ export function CreateAccountScreen({ emailTaken = false }: { emailTaken?: boole
           Create account
         </Button>
         <p className={s.small} style={{ textAlign: 'center' }}>
-          Already have an account? <TextLink onClick={noop}>Sign in</TextLink>
+          Already have an account? <TextLink {...link(paths.signIn)}>Sign in</TextLink>
         </p>
       </AuthForm>
     </AuthLayout>
@@ -89,17 +108,18 @@ export function CreateAccountScreen({ emailTaken = false }: { emailTaken?: boole
 
 /* ---------- 1.3 Forgot password ---------- */
 export function ForgotPasswordScreen({ sent: initiallySent = false }: { sent?: boolean }) {
+  const link = useLinkProps()
   const [sent, setSent] = useState(initiallySent)
   if (sent) {
     return (
       <AuthLayout accent="on its way" title="Check your inbox" lead={`We sent a reset link to ${currentUser.email}. It expires in 30 minutes.`}>
         <div className={s.stack}>
           <Banner title="Didn’t get it?">Check your spam folder, or send the link again.</Banner>
-          <Button icon={MailCheck} onClick={noop}>
-            Resend link
-          </Button>
+          <Button icon={MailCheck}>Resend link</Button>
+          {/* Mock only: stands in for the link in the email. */}
+          <TextLink {...link(paths.resetPassword())}>Open the reset link (demo)</TextLink>
           <p className={s.small}>
-            <TextLink onClick={() => setSent(false)}>Back to sign in</TextLink>
+            <TextLink {...link(paths.signIn)}>Back to sign in</TextLink>
           </p>
         </div>
       </AuthLayout>
@@ -113,7 +133,7 @@ export function ForgotPasswordScreen({ sent: initiallySent = false }: { sent?: b
           Send reset link
         </Button>
         <p className={s.small} style={{ textAlign: 'center' }}>
-          <ArrowLeft size={14} aria-hidden /> <TextLink onClick={noop}>Back to sign in</TextLink>
+          <ArrowLeft size={14} aria-hidden /> <TextLink {...link(paths.signIn)}>Back to sign in</TextLink>
         </p>
       </AuthForm>
     </AuthLayout>
@@ -122,6 +142,8 @@ export function ForgotPasswordScreen({ sent: initiallySent = false }: { sent?: b
 
 /* ---------- 1.4 Reset password ---------- */
 export function ResetPasswordScreen({ expired = false }: { expired?: boolean }) {
+  const navigate = useNavigate()
+  const toast = useToast()
   const [password, setPassword] = useState('Kyoto2026!')
   const [confirm, setConfirm] = useState('Kyoto2026!')
   if (expired) {
@@ -129,16 +151,23 @@ export function ResetPasswordScreen({ expired = false }: { expired?: boolean }) 
       <AuthLayout accent="oh no" title="This link has expired" lead="Reset links last 30 minutes. Ask for a new one and we’ll send it right away.">
         <div className={s.stack}>
           <Banner kind="error" title="Link expired or already used" />
-          <Button variant="primary" icon={Send} fullWidth onClick={noop}>
+          <Button variant="primary" icon={Send} fullWidth onClick={() => navigate(paths.forgotPassword)}>
             Send a new link
           </Button>
         </div>
       </AuthLayout>
     )
   }
+  const mismatch = !!confirm && confirm !== password
   return (
     <AuthLayout accent="fresh start" title="Choose a new password">
-      <AuthForm onSubmit={noop}>
+      <AuthForm
+        onSubmit={() => {
+          if (mismatch) return
+          toast.show({ kind: 'success', message: 'Password saved. Sign in with your new password.' })
+          navigate(paths.signIn, { replace: true })
+        }}
+      >
         <PasswordField label="New password" autoComplete="new-password" leadingIcon={Lock} value={password} onChange={(e) => setPassword(e.target.value)} />
         <PasswordStrength password={password} />
         <PasswordField
@@ -147,7 +176,7 @@ export function ResetPasswordScreen({ expired = false }: { expired?: boolean }) 
           leadingIcon={Lock}
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          error={confirm && confirm !== password ? 'The passwords don’t match.' : undefined}
+          error={mismatch ? 'The passwords don’t match.' : undefined}
         />
         <Button type="submit" variant="primary" icon={Check} fullWidth>
           Save password
@@ -160,7 +189,15 @@ export function ResetPasswordScreen({ expired = false }: { expired?: boolean }) 
 /* ---------- 1.5 Account settings ---------- */
 export function AccountSettingsScreen() {
   const toast = useToast()
+  const navigate = useNavigate()
+  const { signOut } = useAuth()
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  async function leave() {
+    await signOut()
+    navigate(paths.signIn, { replace: true })
+  }
+
   return (
     <AppPage>
       <PageHeader title="Account settings" size="h1" />
@@ -208,7 +245,9 @@ export function AccountSettingsScreen() {
               Session
             </h2>
             <p className={s.small}>Signed in on this computer.</p>
-            <Button icon={LogOut}>Sign out</Button>
+            <Button icon={LogOut} onClick={leave}>
+              Sign out
+            </Button>
           </section>
           <DangerZone
             title="Delete account"
@@ -223,7 +262,10 @@ export function AccountSettingsScreen() {
         title="Delete your account?"
         body="Every notebook, page, sticker, tape and upload will be permanently deleted."
         confirmLabel="Delete account"
-        onConfirm={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          setConfirmDelete(false)
+          await leave()
+        }}
         onCancel={() => setConfirmDelete(false)}
       />
     </AppPage>

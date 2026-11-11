@@ -1,22 +1,16 @@
-import { useState } from 'react'
+import { RouterProvider } from 'react-router/dom'
 import { ToastProvider } from './components'
-import { ComponentGallery } from './gallery/ComponentGallery'
-import { SCREENS } from './features/screenCatalog'
-import { ScreenPicker } from './features/ScreenPicker'
+import { AuthProvider } from './routes/AuthProvider'
+import { router } from './routes/router'
 
-/**
- * Temporary shell: shows one screen at a time, chosen with the picker.
- * React Router replaces this in the routing step.
- */
+/** App root: auth state and toasts wrap the router (routes live in src/routes/router.tsx). */
 function App() {
-  // ?screen=4.2 opens a screen directly (dev convenience for screenshots).
-  const [current, setCurrent] = useState(() => new URLSearchParams(window.location.search).get('screen') ?? '2.1')
-  const screen = SCREENS.find((s) => s.id === current)
   return (
-    <ToastProvider>
-      <div key={current}>{screen ? screen.render() : <ComponentGallery />}</div>
-      <ScreenPicker screens={SCREENS} value={current} onChange={setCurrent} />
-    </ToastProvider>
+    <AuthProvider>
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
+    </AuthProvider>
   )
 }
 

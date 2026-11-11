@@ -96,6 +96,11 @@ export const samplePage: JournalPage = {
   },
 }
 
+/** Lookups the route screens use (will become GET /api/notebooks/{id}/ etc.). */
+export const getNotebook = (id: string | undefined) => notebooks.find((n) => n.id === id)
+export const getLibraryAsset = (id: string | undefined) => libraryAssets.find((a) => a.id === id)
+export const getCollection = (id: string | undefined) => collections.find((c) => c.id === id)
+
 export const fonts = [
   { family: 'Caveat', category: 'Handwriting' as const },
   { family: 'Courier Prime', category: 'Typewriter' as const },

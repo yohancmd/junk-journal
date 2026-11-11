@@ -1,24 +1,13 @@
 import type { ReactNode } from 'react'
 import { AppShell } from '../../components'
 import type { NavKey } from '../../components'
-import { currentUser, currentUserName } from '../../services/mockData'
+import { useShellNav } from './useShellNav'
 
-/**
- * AppShell with the signed-in user. Navigation handlers are no-ops for now;
- * they will be wired to React Router in the routing step.
- */
+/** AppShell with the signed-in user and router-backed navigation. */
 export function AppPage({ active, children }: { active?: NavKey; children: ReactNode }) {
-  const noop = () => {}
+  const nav = useShellNav()
   return (
-    <AppShell
-      active={active}
-      onNavigate={noop}
-      user={{ name: currentUserName, initials: currentUser.initials }}
-      onAccountSettings={noop}
-      onShortcuts={noop}
-      onHelp={noop}
-      onSignOut={noop}
-    >
+    <AppShell active={active} {...nav}>
       {children}
     </AppShell>
   )

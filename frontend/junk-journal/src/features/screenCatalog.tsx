@@ -83,8 +83,8 @@ export const SCREENS: ScreenEntry[] = [
   { id: '7.1', area: 'Asset Library', title: 'All assets', render: () => <AssetLibraryScreen /> },
   { id: '7.2', area: 'Asset Library', title: 'Filtered / search results', render: () => <AssetLibraryScreen view="filtered" /> },
   { id: '7.2b', area: 'Asset Library', title: 'No results', render: () => <AssetLibraryScreen view="no-results" /> },
-  { id: '7.3', area: 'Asset Library', title: 'Collection view', render: () => <AssetLibraryScreen view="collection" /> },
-  { id: '7.4', area: 'Asset Library', title: 'Asset detail', render: () => <AssetLibraryScreen overlay="detail" /> },
+  { id: '7.3', area: 'Asset Library', title: 'Collection view', render: () => <AssetLibraryScreen collectionId="japan" /> },
+  { id: '7.4', area: 'Asset Library', title: 'Asset detail', render: () => <AssetLibraryScreen assetId="as-temple" /> },
   { id: '7.5', area: 'Asset Library', title: 'Rename & move to collection', render: () => <AssetLibraryScreen overlay="rename" /> },
   { id: '7.6', area: 'Asset Library', title: 'Delete asset', render: () => <AssetLibraryScreen overlay="delete" /> },
 

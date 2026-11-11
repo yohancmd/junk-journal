@@ -1,10 +1,13 @@
+import { useNavigate } from 'react-router'
 import { ArrowLeft, LayoutGrid, Lock } from 'lucide-react'
 import { Button } from '../../components'
 import { AppPage } from '../shared/AppPage'
+import { paths } from '../../routes/paths'
 import s from '../shared/screens.module.css'
 
 /* ---------- 8.5 Not found / no access ---------- */
 export function NotFoundScreen({ variant = 'not-found' }: { variant?: 'not-found' | 'no-access' }) {
+  const navigate = useNavigate()
   const noAccess = variant === 'no-access'
   return (
     <AppPage>
@@ -28,8 +31,12 @@ export function NotFoundScreen({ variant = 'not-found' }: { variant?: 'not-found
               : 'It may have been deleted, or the link is from someone else’s notebook.'}
           </p>
           <div className={s.row} style={{ justifyContent: 'center' }}>
-            <Button variant="primary" icon={LayoutGrid}>Back to dashboard</Button>
-            <Button icon={ArrowLeft}>Go back</Button>
+            <Button variant="primary" icon={LayoutGrid} onClick={() => navigate(paths.dashboard)}>
+              Back to dashboard
+            </Button>
+            <Button icon={ArrowLeft} onClick={() => navigate(-1)}>
+              Go back
+            </Button>
           </div>
         </div>
       </section>

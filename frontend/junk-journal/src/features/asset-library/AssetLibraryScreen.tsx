@@ -18,15 +18,17 @@ import {
   TextLink,
   Tip,
   TypeBadge,
+  useToast,
 } from '../../components'
+import { useNavigate } from 'react-router'
 import { AppPage } from '../shared/AppPage'
 import { MockPhotoBlock, StickerArt, TapeArt } from '../shared/MockArt'
 import type { PhotoTone } from '../shared/MockArt'
-import { collections, libraryAssets, stickers, tapes } from '../../services/mockData'
+import { paths } from '../../routes/paths'
+import { collections, getCollection, getLibraryAsset, libraryAssets, stickers, tapes } from '../../services/mockData'
 import type { LibraryAsset } from '../../types'
 import s from '../shared/screens.module.css'
 
-const noop = () => {}
 const TONES: PhotoTone[] = ['yellow', 'green', 'cream']
 
 const FILTERS = [
@@ -62,23 +64,34 @@ function AssetPreview({ asset, large }: { asset: LibraryAsset; large?: boolean }
 }
 
 export interface AssetLibraryScreenProps {
-  /** all = 7.1, filtered = 7.2, no-results = 7.2 empty, collection = 7.3 */
-  view?: 'all' | 'filtered' | 'no-results' | 'collection'
-  /** detail = 7.4, rename = 7.5, delete = 7.6 */
-  overlay?: 'detail' | 'rename' | 'delete'
+  /** all = 7.1, filtered = 7.2, no-results = 7.2 empty */
+  view?: 'all' | 'filtered' | 'no-results'
+  /** From /library/collections/:collectionId (7.3). */
+  collectionId?: string
+  /** From /library/assets/:assetId — opens the detail drawer (7.4). */
+  assetId?: string
+  /** rename = 7.5, delete = 7.6 (local overlays, not routes) */
+  overlay?: 'rename' | 'delete'
 }
 
-export function AssetLibraryScreen({ view = 'all', overlay }: AssetLibraryScreenProps) {
+export function AssetLibraryScreen({ view = 'all', collectionId = 'all', assetId, overlay }: AssetLibraryScreenProps) {
+  const navigate = useNavigate()
+  const toast = useToast()
   const [query, setQuery] = useState(view === 'filtered' ? 'flower' : view === 'no-results' ? 'sunflower' : '')
   const [filters, setFilters] = useState<string[]>(view === 'filtered' || view === 'no-results' ? ['Sticker'] : ['all'])
-  const [collectionId, setCollectionId] = useState(view === 'collection' ? 'japan' : 'all')
-  const [active, setActive] = useState<LibraryAsset | undefined>(overlay ? libraryAssets[0] : undefined)
-  const [drawerOpen, setDrawerOpen] = useState(overlay === 'detail')
   const [renameOpen, setRenameOpen] = useState(overlay === 'rename')
   const [deleteOpen, setDeleteOpen] = useState(overlay === 'delete')
   const [newCollection, setNewCollection] = useState('')
 
-  const collection = collections.find((c) => c.id === collectionId)
+  const routedAsset = getLibraryAsset(assetId)
+  const active: LibraryAsset | undefined = routedAsset ?? (overlay ? libraryAssets[0] : undefined)
+  const drawerOpen = !!routedAsset
+  const libraryHome = collectionId === 'all' ? paths.library : paths.libraryCollection(collectionId)
+  const closeDrawer = () => navigate(libraryHome)
+  const editInStudio = (a: LibraryAsset) =>
+    navigate(a.kind === 'Washi' ? paths.washiStudio('customise') : paths.stickerStudio(a.kind === 'Sticker' ? 'outline' : 'upload'))
+
+  const collection = getCollection(collectionId)
   const filtered = libraryAssets.filter(
     (a) =>
       (filters.includes('all') || filters.includes(a.kind)) &&
@@ -105,10 +118,24 @@ export function AssetLibraryScreen({ view = 'all', overlay }: AssetLibraryScreen
         }}
       />
       <div className={s.twoCol}>
-        <CollectionList collections={collections} activeId={collectionId} onSelect={setCollectionId} onNew={() => setRenameOpen(true)} />
+        <CollectionList
+          collections={collections}
+          activeId={collectionId}
+          onSelect={(id) => navigate(id === 'all' ? paths.library : paths.libraryCollection(id))}
+          onNew={() => setRenameOpen(true)}
+        />
         <div className={`${s.stack} ${s.grow}`}>
           {collectionId !== 'all' && collection && (
-            <CollectionHeader description={collection.description ?? collection.name} meta={`${collection.count} assets · used in Travel Journal`} onAdd={noop} onRename={noop} onDelete={noop} />
+            <CollectionHeader
+              description={collection.description ?? collection.name}
+              meta={`${collection.count} assets · used in Travel Journal`}
+              onAdd={() => navigate(paths.library)}
+              onRename={() => setRenameOpen(true)}
+              onDelete={() => {
+                toast.show({ kind: 'success', message: `Collection “${collection.name}” deleted. Its assets stay in your library.` })
+                navigate(paths.library, { replace: true })
+              }}
+            />
           )}
           {filtered.length === 0 ? (
             <div className={s.emptyFrame} style={{ minHeight: 360 }}>
@@ -123,10 +150,7 @@ export function AssetLibraryScreen({ view = 'all', overlay }: AssetLibraryScreen
                   type={a.kind}
                   selected={drawerOpen && active?.id === a.id}
                   preview={<AssetPreview asset={a} />}
-                  onClick={() => {
-                    setActive(a)
-                    setDrawerOpen(true)
-                  }}
+                  onClick={() => navigate(paths.libraryAsset(a.id))}
                 />
               ))}
             </div>
@@ -138,7 +162,7 @@ export function AssetLibraryScreen({ view = 'all', overlay }: AssetLibraryScreen
       {active && (
         <Drawer
           open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+          onClose={closeDrawer}
           title={active.name}
           headerStart={<TypeBadge type={active.kind} />}
           footer={
@@ -150,7 +174,7 @@ export function AssetLibraryScreen({ view = 'all', overlay }: AssetLibraryScreen
               </div>
               <div className={s.row}>
                 <Button variant="destructive" onClick={() => setDeleteOpen(true)}>Delete</Button>
-                <Button variant="primary" icon={WandSparkles}>Edit in studio</Button>
+                <Button variant="primary" icon={WandSparkles} onClick={() => editInStudio(active)}>Edit in studio</Button>
               </div>
             </>
           }
@@ -170,7 +194,7 @@ export function AssetLibraryScreen({ view = 'all', overlay }: AssetLibraryScreen
             <span className={`${s.small} ${s.grow}`} style={{ fontWeight: 600 }}>
               Placed on {active.usedOnPages} pages in {active.usedInNotebooks} notebooks
             </span>
-            <TextLink onClick={noop}>Show</TextLink>
+            <TextLink onClick={() => navigate(paths.notebooks)}>Show</TextLink>
           </div>
           <Tip icon={ShieldCheck}>Editing this asset won’t change pages where it’s already placed.</Tip>
         </Drawer>
@@ -209,7 +233,11 @@ export function AssetLibraryScreen({ view = 'all', overlay }: AssetLibraryScreen
         body="It will be removed from your library and from every collection."
         reassure={`It’s placed on ${active?.usedOnPages ?? 0} pages. Those copies stay where they are.`}
         confirmLabel="Delete asset"
-        onConfirm={() => setDeleteOpen(false)}
+        onConfirm={() => {
+          setDeleteOpen(false)
+          toast.show({ kind: 'success', message: `“${active?.name}” deleted from your library.` })
+          if (drawerOpen) closeDrawer()
+        }}
         onCancel={() => setDeleteOpen(false)}
       />
     </AppPage>

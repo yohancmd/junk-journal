@@ -28,15 +28,17 @@ import {
   WashiTape,
 } from '../../components'
 import type { TapeEdge, TapePattern } from '../../components'
+import { useNavigate } from 'react-router'
 import { AppPage } from '../shared/AppPage'
 import { MockPhoto, TapeArt } from '../shared/MockArt'
-import { collections, currentUser, currentUserName, tapes } from '../../services/mockData'
+import { useShellNav } from '../shared/useShellNav'
+import { paths } from '../../routes/paths'
+import { collections, libraryAssets, tapes } from '../../services/mockData'
 import emptyArt from '../../assets/empty-illustration.svg'
 import s from '../shared/screens.module.css'
 
 const noop = () => {}
 const STEPS = ['Method', 'Pattern', 'Customise', 'Save']
-const user = { name: currentUserName, initials: currentUser.initials }
 
 const COLOURS = [
   { value: 'var(--color-cream)', color: 'var(--color-cream)', label: 'Light Yellow' },
@@ -58,17 +60,29 @@ function PaperStage({ children }: { children: ReactNode }) {
   )
 }
 
+export type WashiMethod = 'pattern' | 'upload'
+
 export interface WashiStudioScreenProps {
   /** 0 = 6.1 Method, 1 = 6.2 Pattern / 6.3 Upload, 2 = 6.4 Customise, 3 = 6.5 Save */
   step?: number
-  method?: 'pattern' | 'upload'
+  method?: WashiMethod
+  /** When set, step and method are controlled by the route (/washi-tapes/new/:step). */
+  onStepChange?: (step: number, method: WashiMethod) => void
   saved?: boolean
 }
 
 /* ---------- 6.1 – 6.5 Washi Tape Studio ---------- */
-export function WashiStudioScreen({ step: initialStep = 0, method: initialMethod = 'pattern', saved: initiallySaved = false }: WashiStudioScreenProps) {
-  const [step, setStep] = useState(initialStep)
-  const [method, setMethod] = useState(initialMethod)
+export function WashiStudioScreen({ step: stepProp = 0, method: methodProp = 'pattern', onStepChange, saved: initiallySaved = false }: WashiStudioScreenProps) {
+  const navigate = useNavigate()
+  const shell = useShellNav()
+  const [localStep, setLocalStep] = useState(stepProp)
+  const [method, setMethod] = useState<WashiMethod>(methodProp)
+  const step = onStepChange ? stepProp : localStep
+  const setStep = (next: number | ((s: number) => number)) => {
+    const value = typeof next === 'function' ? next(step) : next
+    if (onStepChange) onStepChange(value, method)
+    else setLocalStep(value)
+  }
   const [pattern, setPattern] = useState<TapePattern>('gingham')
   const [base, setBase] = useState('var(--color-cream)')
   const [ink, setInk] = useState('var(--color-green)')
@@ -219,7 +233,7 @@ export function WashiStudioScreen({ step: initialStep = 0, method: initialMethod
     )
   } else {
     panelTitle = 'Save your tape'
-    next = saved ? { label: 'Use on a page', icon: Plus, onClick: noop } : { label: 'Save tape', icon: Ribbon, onClick: () => setSaved(true) }
+    next = saved ? { label: 'Use on a page', icon: Plus, onClick: () => navigate(paths.notebooks) } : { label: 'Save tape', icon: Ribbon, onClick: () => setSaved(true) }
     preview = (
       <PaperStage>
         <div style={{ position: 'absolute', left: 170, top: 150, width: 420, height: 320, transform: 'rotate(-3deg)' }}>
@@ -257,11 +271,8 @@ export function WashiStudioScreen({ step: initialStep = 0, method: initialMethod
       steps={STEPS.map((x, i) => (i === 1 && isImage ? 'Upload' : x))}
       current={step}
       onStepClick={setStep}
-      onLibrary={noop}
-      user={user}
-      onNavigate={noop}
-      onAccountSettings={noop}
-      onSignOut={noop}
+      onLibrary={() => navigate(paths.tapes)}
+      {...shell}
       preview={preview}
       panelTitle={panelTitle}
       panel={panel}
@@ -273,6 +284,11 @@ export function WashiStudioScreen({ step: initialStep = 0, method: initialMethod
 
 /* ---------- 6.6 Tape library ---------- */
 export function TapeLibraryScreen({ state = 'filled' }: { state?: 'filled' | 'empty' | 'no-results' }) {
+  const navigate = useNavigate()
+  const openAsset = (tapeId: string) => {
+    const asset = libraryAssets.find((a) => a.refId === tapeId)
+    navigate(asset ? paths.libraryAsset(asset.id) : paths.library)
+  }
   const [query, setQuery] = useState(state === 'no-results' ? 'tartan' : '')
   const [filters, setFilters] = useState<string[]>(['all'])
   const list = state === 'empty' ? [] : tapes.filter((t) => t.name.toLowerCase().includes(query.toLowerCase()) && (filters.includes('all') || filters.some((f) => f === t.edgeStyle || (f === 'patterns' && t.pattern !== 'image'))))
@@ -285,13 +301,13 @@ export function TapeLibraryScreen({ state = 'filled' }: { state?: 'filled' | 'em
         actions={
           <>
             <SearchField placeholder="Search tapes" value={query} onChange={(e) => setQuery(e.target.value)} onClear={() => setQuery('')} />
-            <Button variant="primary" icon={Plus}>New tape</Button>
+            <Button variant="primary" icon={Plus} onClick={() => navigate(paths.washiStudio())}>New tape</Button>
           </>
         }
       />
       {state === 'empty' ? (
         <div className={s.emptyFrame}>
-          <EmptyState accent="no tapes yet" body="Pick a pattern or upload an image to make a washi tape." action={{ label: 'Make a tape', icon: Ribbon }} />
+          <EmptyState accent="no tapes yet" body="Pick a pattern or upload an image to make a washi tape." action={{ label: 'Make a tape', icon: Ribbon, onClick: () => navigate(paths.washiStudio()) }} />
         </div>
       ) : (
         <>
@@ -312,7 +328,7 @@ export function TapeLibraryScreen({ state = 'filled' }: { state?: 'filled' | 'em
           ) : (
             <div className={s.grid2}>
               {list.map((t) => (
-                <TapeCard key={t.id} name={t.name} meta={`${cap(t.edgeStyle)} edge · ${t.width} px`} onOpen={noop} onRename={noop} onEdit={noop} onDelete={noop} tape={<TapeArt tape={t} length={220} bg="card" />} />
+                <TapeCard key={t.id} name={t.name} meta={`${cap(t.edgeStyle)} edge · ${t.width} px`} onOpen={() => openAsset(t.id)} onRename={() => openAsset(t.id)} onEdit={() => navigate(paths.washiStudio('customise'))} onDelete={() => openAsset(t.id)} tape={<TapeArt tape={t} length={220} bg="card" />} />
               ))}
             </div>
           )}

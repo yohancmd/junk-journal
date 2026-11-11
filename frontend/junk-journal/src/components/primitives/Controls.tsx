@@ -1,5 +1,5 @@
 import { useId, useRef } from 'react'
-import type { CSSProperties, InputHTMLAttributes, KeyboardEvent, PointerEvent, ReactNode } from 'react'
+import type { CSSProperties, InputHTMLAttributes, KeyboardEvent, MouseEvent, PointerEvent, ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { Check } from 'lucide-react'
 import { cx } from '../utils/cx'
@@ -269,8 +269,9 @@ export function KeyCap({ children }: { children: ReactNode }) {
 /* ---------- TextLink (§1.12) ---------- */
 export interface TextLinkProps {
   children: ReactNode
+  /** With href it renders a real <a>; pair it with an onClick that calls preventDefault for in-app navigation. */
   href?: string
-  onClick?: () => void
+  onClick?: (e: MouseEvent<HTMLElement>) => void
   className?: string
 }
 

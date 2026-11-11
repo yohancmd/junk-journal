@@ -74,7 +74,18 @@ function NotebookFields({ value, onChange, titleError }: { value: NotebookFormSt
 }
 
 /* ---------- 3.1 Create notebook ---------- */
-export function CreateNotebookModal({ open, onClose, showTitleError = false }: { open: boolean; onClose: () => void; showTitleError?: boolean }) {
+export function CreateNotebookModal({
+  open,
+  onClose,
+  onCreated,
+  showTitleError = false,
+}: {
+  open: boolean
+  onClose: () => void
+  /** Called after a valid submit (mock: no notebook is actually created yet). */
+  onCreated?: () => void
+  showTitleError?: boolean
+}) {
   const [form, setForm] = useState<NotebookFormState>({ title: showTitleError ? '' : 'Travel Journal', description: 'Kyoto & Osaka, June 2026', pageSize: 'A5', background: 'dotted', theme: 'yellow' })
   const [submitted, setSubmitted] = useState(showTitleError)
   const titleError = submitted && !form.title.trim() ? 'Give your notebook a title.' : undefined
@@ -96,7 +107,14 @@ export function CreateNotebookModal({ open, onClose, showTitleError = false }: {
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" icon={Plus} onClick={() => setSubmitted(true)}>
+          <Button
+            variant="primary"
+            icon={Plus}
+            onClick={() => {
+              setSubmitted(true)
+              if (form.title.trim()) onCreated?.()
+            }}
+          >
             Create notebook
           </Button>
         </>

@@ -27,8 +27,10 @@ import {
   Toast,
 } from '../../components'
 import type { CropRatio, ImageTool, PaperType, PenTool, SaveStatus, SidebarTab, TextStyleValue } from '../../components'
+import { useNavigate } from 'react-router'
 import { fonts, notebooks, samplePage, stickerCategories } from '../../services/mockData'
-import type { JournalPage } from '../../types'
+import type { JournalPage, Notebook } from '../../types'
+import { paths } from '../../routes/paths'
 import { SamplePageView } from '../shared/MockArt'
 import { EditorProperties, SidebarContent } from './EditorPanels'
 import type { PanelKind } from './EditorPanels'
@@ -64,7 +66,6 @@ const SELECT_FOR_MODE: Partial<Record<EditorMode, string>> = {
 }
 
 const noop = () => {}
-const notebook = notebooks[0]
 
 // Lasso / polygon sample points, in page coordinates over the temple photo.
 const LASSO: Array<[number, number]> = [[110, 130], [150, 95], [230, 90], [300, 120], [320, 180], [270, 235], [180, 240], [120, 210]]
@@ -88,9 +89,12 @@ export interface JournalEditorScreenProps {
   mode?: EditorMode
   /** 4.14 save-status states */
   saveStatus?: SaveStatus
+  notebook?: Notebook
+  pageNumber?: number
 }
 
-export function JournalEditorScreen({ mode: initialMode = 'nothing', saveStatus: initialStatus }: JournalEditorScreenProps) {
+export function JournalEditorScreen({ mode: initialMode = 'nothing', saveStatus: initialStatus, notebook = notebooks[0], pageNumber = 3 }: JournalEditorScreenProps) {
+  const navigate = useNavigate()
   const [mode, setMode] = useState<EditorMode>(initialMode)
   const [selectedId, setSelectedId] = useState<string | undefined>(SELECT_FOR_MODE[initialMode])
   const [tab, setTab] = useState<SidebarTab>(initialMode === 'backgrounds' ? 'backgrounds' : initialMode === 'uploading' ? 'uploads' : 'stickers')
@@ -107,14 +111,19 @@ export function JournalEditorScreen({ mode: initialMode = 'nothing', saveStatus:
   )
   const [text, setText] = useState<TextStyleValue>({ family: 'Caveat', size: 34, color: 'var(--color-green)', bold: false, italic: false, align: 'left' })
 
+  // Mock: every page shows the sample content; the API will load JournalPage by notebook + page number.
   const page: JournalPage = useMemo(
     () => ({
       ...samplePage,
+      notebookId: notebook.id,
+      pageNumber,
       background: { paper },
       content: mode === 'empty' ? { version: 1, elements: [] } : samplePage.content,
     }),
-    [paper, mode],
+    [paper, mode, notebook.id, pageNumber],
   )
+  const spreadLeft: JournalPage = { ...PAGE_TWO, pageNumber: Math.max(1, pageNumber - 1) }
+  const goPage = (n: number) => navigate(paths.editor(notebook.id, n, mode === 'spread' ? 'spread' : undefined))
   const selected = page.content.elements.find((el) => el.id === selectedId)
   const saveStatus: SaveStatus = initialStatus ?? (mode === 'uploading' ? 'saving' : 'saved')
   const cropMode = mode === 'crop' || mode === 'lasso' || mode === 'polygon' || mode === 'selection-actions'
@@ -276,12 +285,12 @@ export function JournalEditorScreen({ mode: initialMode = 'nothing', saveStatus:
     overlay = (
       <div className={e.overlayBottom}>
         <FloatingToolbar label="Spread navigation">
-          <FloatingButton icon={ChevronLeft} label="Previous spread" />
-          <FloatingButton label="Pages 2–3" showLabel />
-          <FloatingButton icon={ChevronRight} label="Next spread" />
+          <FloatingButton icon={ChevronLeft} label="Previous spread" disabled={pageNumber <= 2} onClick={() => goPage(pageNumber - 2)} />
+          <FloatingButton label={`Pages ${spreadLeft.pageNumber}–${pageNumber}`} showLabel />
+          <FloatingButton icon={ChevronRight} label="Next spread" disabled={pageNumber + 2 > notebook.pageCount} onClick={() => goPage(pageNumber + 2)} />
           <FloatingDivider />
           <FloatingButton icon={BookOpen} label="Spread" showLabel active />
-          <FloatingButton icon={File} label="Single" showLabel onClick={() => setMode('nothing')} />
+          <FloatingButton icon={File} label="Single" showLabel onClick={() => navigate(paths.editor(notebook.id, pageNumber))} />
         </FloatingToolbar>
       </div>
     )
@@ -291,21 +300,21 @@ export function JournalEditorScreen({ mode: initialMode = 'nothing', saveStatus:
     <div className={e.editor}>
       <EditorToolbar
         notebookTitle={notebook.title}
-        page={spread ? 2 : 3}
+        page={pageNumber}
         pageCount={notebook.pageCount}
-        pageLabel={spread ? 'Pages 2–3 of 24 · spread' : undefined}
+        pageLabel={spread ? `Pages ${spreadLeft.pageNumber}–${pageNumber} of ${notebook.pageCount} · spread` : undefined}
         zoom={zoom}
         guides={guides}
         saveStatus={saveStatus}
-        onBack={noop}
+        onBack={() => navigate(paths.notebook(notebook.id))}
         onUndo={noop}
         onRedo={noop}
         onZoomIn={() => setZoom((z) => Math.min(2, z + 0.1))}
         onZoomOut={() => setZoom((z) => Math.max(0.5, z - 0.1))}
         onFit={() => setZoom(1)}
         onToggleGuides={() => setGuides((g) => !g)}
-        onPrevPage={noop}
-        onNextPage={noop}
+        onPrevPage={() => goPage(pageNumber - 1)}
+        onNextPage={() => goPage(pageNumber + 1)}
         onRetrySave={noop}
         onShortcuts={() => setModal('shortcuts')}
         onExport={() => setModal('export')}
@@ -316,7 +325,7 @@ export function JournalEditorScreen({ mode: initialMode = 'nothing', saveStatus:
         </AssetSidebar>
         <CanvasArea overlay={overlay}>
           {spread ? (
-            <SpreadView left={<SamplePageView page={PAGE_TWO} />} right={<SamplePageView page={page} />} />
+            <SpreadView left={<SamplePageView page={spreadLeft} />} right={<SamplePageView page={page} />} />
           ) : (
             <div style={{ transform: zoom !== 1 ? `scale(${zoom})` : undefined }}>
               <SamplePageView page={page} selectedId={selectedId} onSelect={select}>
@@ -346,7 +355,7 @@ export function JournalEditorScreen({ mode: initialMode = 'nothing', saveStatus:
       <SaveAsStickerModal open={modal === 'save-sticker'} onClose={() => setModal(null)} src={emptyArt} categories={stickerCategories} onSave={() => setModal(null)} />
       <ExportModal open={modal === 'export'} onClose={() => setModal(null)} onExport={() => setModal(null)} pageCount={notebook.pageCount} />
       <ShortcutsModal open={modal === 'shortcuts'} onClose={() => setModal(null)} />
-      <RecoveryDialog open={modal === 'recovery'} notebookTitle={notebook.title} page={3} time="today at 14:32" changes={6} onRestore={() => setModal(null)} onDiscard={() => setModal(null)} />
+      <RecoveryDialog open={modal === 'recovery'} notebookTitle={notebook.title} page={pageNumber} time="today at 14:32" changes={6} onRestore={() => setModal(null)} onDiscard={() => setModal(null)} />
     </div>
   )
 }

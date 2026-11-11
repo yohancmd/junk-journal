@@ -34,15 +34,17 @@ import {
   Toggle,
 } from '../../components'
 import type { CropRatio } from '../../components'
+import { useNavigate } from 'react-router'
 import { AppPage } from '../shared/AppPage'
 import { MockPhotoBlock, StickerArt } from '../shared/MockArt'
-import { collections, currentUser, currentUserName, stickerCategories, stickers } from '../../services/mockData'
+import { useShellNav } from '../shared/useShellNav'
+import { paths } from '../../routes/paths'
+import { collections, libraryAssets, stickerCategories, stickers } from '../../services/mockData'
 import s from '../shared/screens.module.css'
 
 const noop = () => {}
 const STEPS = ['Upload', 'Remove background', 'Crop', 'Die-cut & shadow', 'Save']
 const cat = stickers.find((x) => x.id === 'st-cat') ?? stickers[0]
-const user = { name: currentUserName, initials: currentUser.initials }
 
 const BORDER_COLOURS = [
   { value: '#FFFFFF', color: '#FFFFFF', label: 'White' },
@@ -54,13 +56,23 @@ const BORDER_COLOURS = [
 export interface StickerStudioScreenProps {
   /** 0 = 5.1 Upload … 4 = 5.5 Save */
   step?: number
+  /** When set, the step is controlled by the route (/stickers/new/:step). */
+  onStepChange?: (step: number) => void
   /** 5.5 saved state */
   saved?: boolean
 }
 
 /* ---------- 5.1 – 5.5 Sticker Studio ---------- */
-export function StickerStudioScreen({ step: initialStep = 0, saved: initiallySaved = false }: StickerStudioScreenProps) {
-  const [step, setStep] = useState(initialStep)
+export function StickerStudioScreen({ step: stepProp = 0, onStepChange, saved: initiallySaved = false }: StickerStudioScreenProps) {
+  const navigate = useNavigate()
+  const shell = useShellNav()
+  const [localStep, setLocalStep] = useState(stepProp)
+  const step = onStepChange ? stepProp : localStep
+  const setStep = (next: number | ((s: number) => number)) => {
+    const value = typeof next === 'function' ? next(step) : next
+    if (onStepChange) onStepChange(value)
+    else setLocalStep(value)
+  }
   const [saved, setSaved] = useState(initiallySaved)
   const [refine, setRefine] = useState(35)
   const [showCompare, setShowCompare] = useState(true)
@@ -219,7 +231,7 @@ export function StickerStudioScreen({ step: initialStep = 0, saved: initiallySav
       panel = saved ? (
         <>
           <Banner title="Saved to your sticker library">“{name}” is ready to use in any notebook.</Banner>
-          <Button variant="primary" icon={Plus} fullWidth>Use on a page</Button>
+          <Button variant="primary" icon={Plus} fullWidth onClick={() => navigate(paths.notebooks)}>Use on a page</Button>
           <Button icon={Sparkles} fullWidth onClick={() => { setSaved(false); setStep(0) }}>Make another</Button>
         </>
       ) : (
@@ -244,16 +256,13 @@ export function StickerStudioScreen({ step: initialStep = 0, saved: initiallySav
       steps={STEPS}
       current={step}
       onStepClick={setStep}
-      onLibrary={noop}
-      user={user}
-      onNavigate={noop}
-      onAccountSettings={noop}
-      onSignOut={noop}
+      onLibrary={() => navigate(paths.stickers)}
+      {...shell}
       preview={preview}
       panelTitle={panelTitle}
       panel={panel}
       back={step > 0 ? { onClick: () => setStep((x) => x - 1) } : undefined}
-      next={saved && step === 4 ? { label: 'Done', icon: Check, onClick: noop } : next}
+      next={saved && step === 4 ? { label: 'Done', icon: Check, onClick: () => navigate(paths.stickers) } : next}
     />
   )
 }
@@ -265,6 +274,11 @@ function StickerArtIcon({ size }: { size: number }) {
 
 /* ---------- 5.6 Sticker library ---------- */
 export function StickerLibraryScreen({ state = 'filled' }: { state?: 'filled' | 'empty' | 'no-results' }) {
+  const navigate = useNavigate()
+  const openAsset = (stickerId: string) => {
+    const asset = libraryAssets.find((a) => a.refId === stickerId)
+    navigate(asset ? paths.libraryAsset(asset.id) : paths.library)
+  }
   const [category, setCategory] = useState<string[]>(['all'])
   const [query, setQuery] = useState(state === 'no-results' ? 'sunflower' : '')
   const [activeCollection, setActiveCollection] = useState('japan')
@@ -278,13 +292,13 @@ export function StickerLibraryScreen({ state = 'filled' }: { state?: 'filled' | 
         actions={
           <>
             <SearchField placeholder="Search stickers" value={query} onChange={(e) => setQuery(e.target.value)} onClear={() => setQuery('')} />
-            <Button variant="primary" icon={Plus}>New sticker</Button>
+            <Button variant="primary" icon={Plus} onClick={() => navigate(paths.stickerStudio())}>New sticker</Button>
           </>
         }
       />
       {state === 'empty' ? (
         <div className={s.emptyFrame}>
-          <EmptyState accent="no stickers yet" body="Turn a photo into your first die-cut sticker." action={{ label: 'Make a sticker', icon: Sticker }} />
+          <EmptyState accent="no stickers yet" body="Turn a photo into your first die-cut sticker." action={{ label: 'Make a sticker', icon: Sticker, onClick: () => navigate(paths.stickerStudio()) }} />
         </div>
       ) : (
         <>
@@ -307,7 +321,7 @@ export function StickerLibraryScreen({ state = 'filled' }: { state?: 'filled' | 
             ) : (
               <div className={`${s.grid4} ${s.grow}`}>
                 {list.map((st, i) => (
-                  <StickerTile key={st.id} name={st.name} category={st.category} onOpen={noop} onRename={noop} onAddToCollection={noop} onEdit={noop} onDelete={noop} sticker={<StickerArt sticker={st} size={106} rotation={[-4, 6, 0, 3][i % 4]} />} />
+                  <StickerTile key={st.id} name={st.name} category={st.category} onOpen={() => openAsset(st.id)} onRename={() => openAsset(st.id)} onAddToCollection={() => openAsset(st.id)} onEdit={() => navigate(paths.stickerStudio('outline'))} onDelete={() => openAsset(st.id)} sticker={<StickerArt sticker={st} size={106} rotation={[-4, 6, 0, 3][i % 4]} />} />
                 ))}
               </div>
             )}
