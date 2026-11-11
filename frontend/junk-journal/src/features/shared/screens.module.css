@@ -1,0 +1,101 @@
+/* Layout helpers shared by feature screens. Visual styling lives in the components. */
+
+.stack { display: flex; flex-direction: column; gap: var(--space-4); }
+.stackLg { display: flex; flex-direction: column; gap: var(--space-6); }
+.row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.rowBetween { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.sectionTitle { font: var(--text-h2); }
+.small { font: var(--text-small); }
+.muted { font: var(--text-small); opacity: 0.8; }
+
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-6); }
+.grid5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.thumbGrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-6); }
+
+.twoCol { display: flex; gap: var(--space-8); align-items: flex-start; }
+.sideCol { flex: none; width: 360px; display: flex; flex-direction: column; gap: var(--space-6); }
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: var(--border-width) solid var(--color-green);
+  border-radius: var(--radius-card);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-sm);
+}
+.panelTitle { font: var(--text-h2); }
+
+.brandPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-green);
+  color: var(--color-cream);
+}
+.brandPanel h2 { font: var(--text-h2); }
+
+.emptyFrame {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: 24px;
+}
+
+/* Mock artwork */
+.photo {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  background: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+}
+.photoPolaroid { padding: 10px 10px 40px; }
+.photoInner {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: var(--color-green);
+}
+.toneYellow { background: var(--color-yellow); }
+.toneGreen { background: var(--color-green); color: var(--color-yellow); }
+.toneCream { background: color-mix(in srgb, var(--color-yellow) 35%, var(--color-cream)); }
+.photoBlock { display: grid; place-items: center; width: 100%; height: 100%; }
+
+.handwriting { font-family: var(--font-accent); color: var(--color-green); white-space: pre-line; line-height: 1.15; }
+.typed { font-family: var(--font-mono-paper); color: var(--color-ink); line-height: 1.4; }
+
+/* Page thumbnails: mini page content */
+.miniPage { position: relative; display: block; width: 100%; height: 100%; }
+.miniPhoto { position: absolute; left: 12%; top: 10%; width: 50%; height: 28%; border: 1px solid var(--color-green); transform: rotate(-4deg); }
+.miniTape { position: absolute; left: 45%; top: 6%; width: 32%; height: 7%; background: color-mix(in srgb, var(--color-yellow) 80%, transparent); transform: rotate(12deg); }
+.miniLine { position: absolute; left: 12%; height: 2px; background: color-mix(in srgb, var(--color-green) 35%, transparent); }
+
+/* Editor frame positions */
+.overlayTop { position: absolute; top: 12px; left: 0; right: 0; display: flex; justify-content: center; }
+.overlayBottom { position: absolute; bottom: 16px; left: 0; right: 0; display: flex; justify-content: center; }
+.overlayLeft { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); }
+.toastSlot { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); width: min(520px, 90%); }
+
+/* Studio preview helpers */
+.center { position: absolute; inset: 0; display: grid; place-items: center; }
+.previewTag {
+  position: absolute;
+  top: 16px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-green);
+  color: var(--color-cream);
+  font: var(--text-label);
+  font-weight: 700;
+}
+.paperPreview { position: absolute; inset: 0; }
+.splitHalf { position: absolute; top: 0; bottom: 0; width: 50%; display: grid; place-items: center; }

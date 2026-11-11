@@ -35,5 +35,35 @@
 - **Selected rows on Green:** any icon or thumbnail inside a Green-filled selected row needs a Yellow or cream background, otherwise the Green icon disappears (seen in LayerList).
 - **tsconfig uses `verbatimModuleSyntax`:** type-only imports must use `import type`, and don't use the `React.` namespace without importing it. Import `CSSProperties` and `RefObject` directly.
 
+## 2026-11-11 — Building the screens: contradictions between the reference docs
+These need a decision; the screens use the choice noted after each one.
+1. **Component folder structure.** technical-claude.md §2 wants `components/{common, navigation, notebook, editor, sticker, washi-tape, image-editor}`. The existing components are in `{primitives, feedback, overlays, shell, cards, editor, studio, auth}`. *Choice:* left them as they are, because guideline 9 says to explain before replacing an implementation. A possible mapping: primitives/feedback/overlays/auth → common, shell → navigation, NotebookCard/PageThumbnail → notebook, crop/lasso/polygon overlays + CropBar + BeforeAfter → image-editor, DieCutSticker/StickerTile → sticker, WashiTape/PatternPicker/TapeCard → washi-tape.
+2. **Missing feature folders.** technical-claude.md lists six features but has no home for the account screens (1.1–1.5) or the system pages (8.5 not found, 8.6 recovery). *Choice:* added `features/account/`, `features/system/` and `features/shared/` (shared layout, mock artwork).
+3. **"Don't generate the entire application in one response"** (technical-claude.md guideline 11) vs the request to add all screens at once. *Choice:* built them one area at a time, type-checking and screenshotting after each. The screens are UI only with mock data: no routing, no API, no real canvas logic.
+4. **Ink colour.** technical-claude.md's page JSON example uses `#39332E` (the product doc's "Dark Ink"), but the design system defines `--color-ink: #2E2A26`. *Choice:* used the design-system token.
+5. **Page size and aspect ratio.**
+   - technical-claude.md §7.1 uses logical page units of 1200 × 1600 (3:4).
+   - screens.md and the mockups say A5 (148 × 210 mm, about 1:1.41).
+   - The Pencil mockups draw the page at 560 × 720 (7:9), which matches neither.
+   - *Choice:* mock pages use 560 × 720 to match the mockups. This needs one agreed logical size before the editor is built for real.
+6. **Data model gaps** (technical-claude.md §4 vs screens.md):
+   - **Notebook:** screens 3.1/3.4 set a *default page background* and a creation date, but the Notebook table has no default-background field (`background_config` is only on JournalPage).
+   - **WashiTapeAsset:** has one `color` and a `pattern_image`, but the pattern creator (6.2) needs a pattern type, a base colour, a pattern colour, scale and a texture flag.
+   - **Collections:** they appear everywhere in the Asset Library (7.1–7.5) and the sticker library, but there is no Collection table and no many-to-many link.
+   - *Choice:* the frontend types in `src/types/index.ts` include these fields, so the backend model needs to catch up.
+7. **Canvas library not chosen** (React-Konva vs Fabric.js). *Choice:* the editor screens use the DOM-based `Page` / `PageElement` / `SelectionBox` components as visual stand-ins. Swap them for the chosen canvas library when the editor logic is built.
+8. **3.1 Create notebook:** the screen map in screens.md says "Modal (multi-step)" but the details say "multi-step or single long form". *Choice:* a single form with a live preview, matching the Pencil mockup.
+9. **"Notebooks" nav item:** the NavRail has a Notebooks destination, but screens.md has no notebooks-list page (the dashboard's "All notebooks" covers it). *Decide in routing:* point it at the dashboard's list or add a list page.
+10. **8.1 navigation, 8.2 empty states and 8.4 toasts are patterns, not screens.** They're built into every screen (AppPage, EmptyState, ToastProvider), so the screen catalogue has no separate entry for them. 8.3 loading is `DashboardScreen state="loading"`.
+11. **No real photos in the repo.** Pages and libraries show `MockPhoto` placeholders (tinted blocks with an image icon), and sticker previews use icon die-cuts. The save-as-sticker preview and the uploaded washi pattern borrow the empty-state illustration.
+
+## 2026-11-11 — Mistakes while building the screens (fixed)
+- **Inline span as a sized box:** `MiniPage` was a `<span>` with width/height 100%, so the page-thumbnail sketches didn't show. Give it `display: block`.
+- **Overlays hidden under page elements:** each PageElement has its own z-index, so CropOverlay and PolygonOverlay, added later in the DOM, were drawn underneath. Wrap page overlays in a layer with a high z-index.
+- **Inherited colour hid text:** the JournalCover label inherited the cream text colour of the Green preview panel, so the title vanished. Components on Green panels must set their own text colour.
+- **`React.ReactNode` without importing React** again (verbatimModuleSyntax). Always `import type { ReactNode } from 'react'`.
+- **Constants exported next to components** (NotebookParts' `PAPERS`) trips the fast-refresh lint. Moved to `options.ts`.
+- **Visual check method that works:** `?screen=<id>` opens a screen directly, and `scratchpad/shoot.ps1` (headless Edge + System.Drawing) builds a contact sheet of several screens.
+
 ## 2026-11-11 — Contrast ratios in design system/claude.md checked
 - I recalculated the WCAG ratios from the HEX values: Green/Cream 5.6, Green/Yellow 4.3, Jasper/Cream 4.3, Jasper/Yellow 3.3, Green/Jasper 1.3. They all match the doc, so no correction is needed.

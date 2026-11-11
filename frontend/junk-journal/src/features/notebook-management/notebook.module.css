@@ -1,0 +1,63 @@
+/* Notebook-management feature styles */
+
+.cover {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: 6px 16px 16px 6px;
+  box-shadow: var(--shadow-lg);
+}
+.spine { position: absolute; top: 0; bottom: 0; left: 0; width: 9%; background: var(--color-green); }
+.elastic { position: absolute; top: 0; bottom: 0; right: 10%; width: 4%; background: var(--color-red); }
+.label {
+  position: absolute;
+  left: 20%;
+  top: 28%;
+  width: 58%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: 8px;
+  background: var(--color-cream);
+  color: var(--color-green);
+  transform: rotate(-3deg);
+  text-align: center;
+}
+.labelTitle { font: 700 26px/1.1 var(--font-heading); }
+.labelAccent { font: 400 22px/1.1 var(--font-accent); color: var(--accent); }
+.washi { position: absolute; left: 38%; top: 22%; width: 30%; height: 7%; background: color-mix(in srgb, var(--color-cream) 70%, transparent); transform: rotate(8deg); }
+
+.hero { display: flex; align-items: center; gap: 48px; }
+.info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.accent { font: 400 28px/32px var(--font-accent); color: var(--accent); }
+.title { font: 700 48px/1.1 var(--font-heading); }
+.meta { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.metaPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-green);
+  border-radius: var(--radius-pill);
+  font: var(--text-label);
+}
+.strip { display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+
+.previewPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  background: var(--color-green);
+  color: var(--color-cream);
+}
+.previewLabel { font: var(--text-label); font-weight: 700; letter-spacing: 1px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.swatch { width: 72px; }
