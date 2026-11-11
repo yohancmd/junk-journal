@@ -84,30 +84,28 @@ A central collection of everything users create or upload: stickers, washi tapes
 • Asset independence: the library keeps original assets separate from their placements. Each placement has its own position, size, rotation, opacity, crop and layer. Changing one placement never affects others, and editing a library asset must not unexpectedly change existing journal pages.
 5. User Interface and Visual Direction
 The app should feel warm, playful, personal and artistic, like a mix of a scrapbook, a stationery shop, a digital notebook and a creative workspace. It should not look like a corporate productivity dashboard, and the focus stays on the notebook pages and creative materials.
-Suggested design elements: paper-like backgrounds and subtle textures, soft shadows, rounded stationery-style controls, decorative illustrations, handwritten headings for select titles, muted pastels, vintage scrapbook accents, torn-paper edges and layered paper effects. The interface must stay readable and functional despite the decoration.
-Suggested color palette (centralized as design tokens)
+Suggested design elements: paper-like backgrounds and subtle textures, soft warm shadows, rounded stationery-style controls, decorative illustrations, handwritten headings for select titles, vintage scrapbook accents, torn-paper edges and layered paper effects. The interface must stay readable and functional despite the decoration.
+Color palette (centralized as design tokens) — the design system replaces the original pastel suggestion. Full rules, contrast pairings and tokens are in design system/claude.md.
 Name
 Hex
-Warm Cream
-#F7F1E7
-Paper White
-#FFFDF8
-Soft Beige
-#E8DDCC
-Dusty Pink
-#DCA9A5
-Muted Sage
-#A8B5A0
-Warm Brown
-#8A705D
-Dark Ink
-#39332E
-Typography — readable sans-serif for interface elements, serif for editorial headings, handwriting fonts for decorative accents. Decorative fonts should not be used for small labels or essential instructions.
+La Salle Green (brand, structure and text)
+#007633
+Golden Yellow (highlights)
+#FFDD00
+Light Yellow (page and surfaces)
+#FFFCE1
+Jasper (accent, destructive and warning only)
+#D84040
+Ink (typed text and pen on pages)
+#2E2A26
+Typography — readable sans-serif for interface elements, serif for editorial headings, handwriting fonts for decorative accents. Decorative fonts should not be used for small labels or essential instructions. Until final typefaces are chosen, Nunito Sans, Fraunces and Caveat are used as stand-ins (see design system/claude.md).
 Main pages
 Page
 What it shows
 Dashboard
 Welcome message, recently opened notebooks, all notebooks, create-notebook action, recently created stickers and washi tapes
+Notebooks
+Every notebook in one grid with search and sort (the "Notebooks" item in the navigation), plus the create-notebook action
 Notebook workspace
 Cover, title, page thumbnails, add-page button, open-editor action
 Sticker Studio

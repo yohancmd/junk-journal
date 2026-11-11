@@ -6,10 +6,10 @@ Layer
 Choice
 Notes
 Frontend
-React + TypeScript
-React Router for navigation, Axios for API calls, CSS Modules for styling
+React 19 + TypeScript (Vite)
+React Router 8 (data router) for navigation, Axios for API calls, CSS Modules for styling, Lucide icons (lucide-react)
 Canvas
-React-Konva or Fabric.js (to be evaluated)
+React-Konva (konva 10, react-konva 19, use-image) — decided 2026-11-11
 Custom logic still needed for lasso and polygon selection
 Backend
 Python + Django REST Framework
@@ -25,31 +25,70 @@ Where data lives
 • Relational tables: users, notebooks, pages, stickers, washi tapes and uploaded assets.
 • File or object storage: uploaded photographs, original images, processed stickers, extracted image elements, sticker previews, washi tape patterns, backgrounds and journal exports. PostgreSQL stores only the file paths or storage URLs.
 2. Frontend
-The frontend uses React and TypeScript with a feature-based folder structure and reusable components.
+The frontend uses React and TypeScript with a feature-based folder structure and reusable components. This tree matches the code in frontend/junk-journal (updated 2026-11-11).
 src/
   assets/
-  components/
-    common/
-    navigation/
-    notebook/
-    editor/
-    sticker/
-    washi-tape/
-    image-editor/
+  components/          reusable UI, grouped by kind (specs: design system/components.md)
+    primitives/        Button, IconButton, TextField, Checkbox, Toggle, Slider, NumberField, SegmentedControl, Tag, SwatchGroup, KeyCap, TextLink
+    feedback/          Toast + ToastProvider, Banner, Tip, SaveStatusPill, Skeleton, ProgressBar, EmptyState
+    overlays/          Modal, Drawer, ConfirmDialog, Menu
+    shell/             AppShell, NavRail, PageHeader, Stepper, StudioShell (navigation)
+    cards/             NotebookCard, PageThumbnail, AssetCard, StickerTile, TapeCard, CollectionList, FilterBar
+    editor/            editor chrome, canvas stand-ins, image-editor overlays (crop / lasso / polygon) and editor dialogs
+    studio/            DropZone, BeforeAfter, DieCutSticker, WashiTape, PatternPicker, MethodCard, DirectionDial
+    auth/              AuthLayout, PasswordStrength, DangerZone
+    constants.ts       shared constants (kept out of component files for fast refresh)
+    index.ts           single import point for all components
   features/
+    account/           sign in, sign up, password reset, account settings
     dashboard/
     notebook-management/
     sticker-studio/
     washi-tape-studio/
     journal-editor/
     asset-library/
+    system/            not found / no access
+    shared/            AppPage, shared layout styles, mock artwork
+  routes/              router, path builders (paths.ts), auth guards, route wrappers
   hooks/
-  services/
+  services/            API layer (mock data + mock auth until the Django API exists)
   types/
   utils/
-  styles/
   App.tsx
   main.tsx
+The components folder was originally planned as common/, navigation/, notebook/, editor/, sticker/, washi-tape/ and image-editor/. It is grouped by kind instead; the mapping is primitives + feedback + overlays + auth → common, shell → navigation, cards → notebook and asset tiles, studio → sticker and washi-tape, editor → editor and image-editor. Design tokens live in src/index.css.
+Routes
+Route
+Screen (design system/screens.md)
+/sign-in, /sign-up, /forgot-password
+1.1–1.3, signed-out only
+/reset-password/:token
+1.4
+/dashboard (/ redirects here)
+2.1, 2.2
+/account
+1.5
+/notebooks
+Notebook list (NavRail "Notebooks")
+/notebooks/new
+3.1 create modal over the dashboard
+/notebooks/:notebookId, /notebooks/:notebookId/settings
+3.2 workspace, 3.4 settings drawer (child route, page stays mounted)
+/notebooks/:notebookId/pages
+3.3 page overview
+/notebooks/:notebookId/pages/:pageNumber (?view=spread)
+4.x journal editor, 4.16 spread
+/stickers, /stickers/new/:step
+5.6 library, 5.1–5.5 studio (upload, background, crop, outline, save)
+/washi-tapes, /washi-tapes/new/:step
+6.6 library, 6.1–6.5 studio (method, pattern or upload, customise, save)
+/library, /library/collections/:collectionId, /library/assets/:assetId
+7.1, 7.3, 7.4 detail drawer (child routes, page stays mounted)
+*
+8.5 not found
+/dev, /dev/screens/:id, /dev/components
+Development builds only: every screen state and the component gallery
+Every route except the sign-in group requires a signed-in user; signed-out users are redirected to /sign-in and returned to the page they wanted after signing in.
 Responsibilities
 • React: UI rendering.
 • TypeScript: type safety, with interfaces for notebooks, pages, stickers, washi tapes, images and canvas elements.
@@ -57,7 +96,7 @@ Responsibilities
 • State management: editor and notebook state, kept separate from backend API communication.
 • Axios: backend communication.
 • CSS Modules: component styling, with colors centralized as design tokens.
-Canvas library — evaluate React-Konva and Fabric.js. The chosen library must support object selection, dragging, resizing, rotation, layer management, custom rendering, pointer and touch interaction, and clipping and masking. Do not assume it provides every required cropping operation out of the box. A separate drawing layer or canvas may be used for freehand strokes.
+Canvas library — React-Konva (chosen over Fabric.js on 2026-11-11). It covers object selection, dragging (draggable), resizing and rotation (Transformer), layer management (Layer and element order), custom rendering, pointer and touch interaction, and clipping and masking (clipFunc). It does not provide every cropping operation out of the box, and it cannot render the React SVG components directly: washi tape patterns are drawn to a tile used as fillPatternImage, and die-cut borders are generated from the image's alpha on an offscreen canvas. Use a separate Konva Layer for freehand strokes. The HTML UI (toolbars, sidebar, properties panel, crop bar) stays as React DOM layered over the Stage. A canvas is invisible to screen readers, so the layers list and keyboard shortcuts are the accessible way to work with page elements.
 3. Backend
 The backend uses Django and Django REST Framework, split into one app per domain. Each app contains its own models, serializers, views, URLs and business logic.
 accounts/
@@ -77,8 +116,9 @@ Backend responsibilities
 • Asset metadata.
 • Ownership and permissions: users can only access their own notebooks and assets, and uploaded files are validated.
 File storage — use Django media storage for local development and an appropriate object storage service in production.
+Frontend hosting — the frontend is a single-page app with client-side routes. Whatever serves it (a Django catch-all view or a static-host rewrite) must return index.html for every non-API, non-asset path, otherwise deep links such as /notebooks/{id}/pages/3 return 404 on refresh.
 4. Data Model
-The proposed initial schema has seven tables. Every table has created_at, and all except ImageEdit also have updated_at (User and the asset tables included). Foreign keys to the user enforce ownership.
+The proposed initial schema has nine tables. Every table has created_at, and all except ImageEdit and CollectionItem also have updated_at (User and the asset tables included). Foreign keys to the user enforce ownership. Updated 2026-11-11 with the fields the screens need (default page background, washi pattern settings, collections).
 Table
 Fields
 Relationships
@@ -86,8 +126,8 @@ User
 id, username, email, password_hash, created_at, updated_at
 One user has many notebooks
 Notebook
-id, user_id (FK), title, description, cover_image, theme, page_size, created_at, updated_at
-One notebook has many pages
+id, user_id (FK), title, description, cover_image, theme, page_size, default_background_config (JSONB), created_at, updated_at
+One notebook has many pages. default_background_config is copied into each new page's background_config (screens 3.1 and 3.4); created_at is the creation date shown in the create form.
 JournalPage
 id, notebook_id (FK), title, page_number, background_config (JSONB), canvas_width, canvas_height, page_content (JSONB), created_at, updated_at
 Belongs to a notebook
@@ -95,7 +135,7 @@ StickerAsset
 id, user_id (FK), name, original_image, processed_image, preview_image, outline_config (JSONB), shadow_config (JSONB), category, created_at, updated_at
 Belongs to a user
 WashiTapeAsset
-id, user_id (FK), name, pattern_image, preview_image, color, width, default_length, edge_style, opacity, created_at, updated_at
+id, user_id (FK), name, pattern_type (solid, dots, stripes, gingham, grid, check, florals, hand-drawn, vintage, image), base_color, pattern_color, pattern_scale, image_mode (repeat or scale), texture (boolean), pattern_image (only for pattern_type image), preview_image, width, default_length, edge_style, opacity, created_at, updated_at
 Belongs to a user
 UploadedAsset
 id, user_id (FK), name, original_file, preview_file, file_type, category, created_at, updated_at
@@ -103,6 +143,12 @@ Belongs to a user
 ImageEdit
 id, user_id (FK), source_asset_id, output_asset_id (optional), edit_type, crop_configuration (JSONB), mask_data (JSONB or file reference), created_at
 Links a source asset to an optional extracted output
+Collection
+id, user_id (FK), name, description, created_at, updated_at
+Belongs to a user; groups assets in the Asset Library and sticker/tape libraries
+CollectionItem
+id, collection_id (FK), asset_type (sticker, washi_tape or uploaded), asset_id, created_at
+Many-to-many link: one asset can be in several collections. Deleting a collection never deletes its assets.
 ImageEdit stores reusable or generated image-editing information, which preserves the distinction between original images and extracted results.
 5. Journal Page Content Structure
 Each page's objects are stored as versioned, structured JSON in JournalPage.page_content. The example below shows a sticker, a text box, a washi tape and a cropped image; the image's crop is stored on its placement, independent of the original asset.
@@ -134,7 +180,7 @@ Each page's objects are stored as versioned, structured JSON in JournalPage.page
       "content": "A little memory from today.",
       "font_family": "serif",
       "font_size": 24,
-      "color": "#39332E"
+      "color": "#2E2A26"
     },
     {
       "id": "element-003",
@@ -199,7 +245,7 @@ Image processing
 POST /api/images/crop/ · POST /api/images/extract-selection/ · POST /api/images/remove-background/ · POST /api/images/preview/
 7. Editor and Image Editing Implementation
 7.1 Editor requirements
-• Coordinate system: each page has fixed logical dimensions (example: 1200 × 1600 units) that never change with zoom. The displayed canvas scales to fit the workspace at the correct aspect ratio, and object positions are stored in logical page units, not browser screen coordinates.
+• Coordinate system: each page has fixed logical dimensions with a true A5 ratio of 1 : √2 (example: 1200 × 1697 units, portrait) that never change with zoom. The displayed canvas scales to fit the workspace at the correct aspect ratio, and object positions are stored in logical page units, not browser screen coordinates.
 • Object independence: every placed object is its own instance with its own transform and crop. Placing one sticker five times creates five separate objects.
 • Drop behavior: on drop, create a new element instance, assign a unique id, calculate its initial canvas position, apply default dimensions, add it to the page's element collection and make it selectable and editable.
 • Undo and redo: maintain an editing history covering all significant operations, including destructive image edits.
@@ -230,7 +276,7 @@ Non-destructive approach
 • Save extracted results as new assets only when the user asks.
 • Preserve image quality, and support undo and redo for crop operations.
 Background removal — a dedicated service or API, with manual crop and selection as an alternative. Transparent PNG uploads skip this step.
-React-Konva or Fabric.js may help with selection, clipping and rendering, but custom logic is still needed for complete lasso and polygon behavior.
+React-Konva handles selection, clipping (clipFunc on a Group) and rendering, but custom logic is still needed for complete lasso and polygon behavior.
 8. Development Guidelines and First Milestone
 Guidelines for implementing with Claude
 1. Build incrementally, following the product roadmap, and prioritize the working editor over decorative animation and effects.

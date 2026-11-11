@@ -8,7 +8,8 @@ All screens, modals and key states the product needs, built from `claude/product
 - One primary (green) button per view. Toolbar actions use secondary buttons.
 - Every interactive element has the 3 px Golden Yellow focus ring.
 - Handwriting font only for decorative titles, never for labels or instructions.
-- The product doc suggests a muted pastel palette (Warm Cream, Dusty Pink and so on). The design system replaces it with Green / Golden Yellow / Light Yellow / Jasper, so screens use the design system palette.
+- Colours come from the design system palette (Green / Golden Yellow / Light Yellow / Jasper). The product doc's original pastel suggestion has been replaced to match.
+- Every screen has a URL; the full route table is in `claude/technical-claude.md` §2 (Routes).
 
 ---
 
@@ -23,7 +24,8 @@ All screens, modals and key states the product needs, built from `claude/product
 | 1.5 | Account | Account settings | Page | 1 |
 | 2.1 | Dashboard | Dashboard | Page | 1 |
 | 2.2 | Dashboard | Dashboard, first-time (empty) | State | 1 |
-| 3.1 | Notebooks | Create notebook | Modal (multi-step) | 1 |
+| 3.0 | Notebooks | Notebook list | Page | 1 |
+| 3.1 | Notebooks | Create notebook | Modal (single form + live preview) | 1 |
 | 3.2 | Notebooks | Notebook workspace | Page | 1 |
 | 3.3 | Notebooks | Page overview (all thumbnails) | Page / view | 1 |
 | 3.4 | Notebooks | Notebook settings | Modal / drawer | 1 |
@@ -114,7 +116,12 @@ All screens, modals and key states the product needs, built from `claude/product
 
 ## 3. Notebook management
 
-### 3.1 Create notebook (modal, multi-step or single long form)
+### 3.0 Notebook list
+- **Purpose:** the "Notebooks" destination in the navigation rail.
+- **Shows:** every notebook as a grid of notebook cards (with cover accents), search, sort chips (recent, name, created) and the "Create notebook" primary button. Card actions match the dashboard.
+- **States:** default, no search results, loading skeletons.
+
+### 3.1 Create notebook (modal, single form with live preview)
 - **Fields:** title (required), optional description, cover (pick a preset or upload), colour/theme, paper size, default page background (white, cream, grid, lined, dotted, vintage, kraft, floral), creation date (prefilled with today).
 - **Shows:** a live cover preview beside the form.
 - **States:** default, title missing error, cover upload in progress, creating (button loading). On success, opens the Notebook workspace (3.2).
@@ -142,7 +149,7 @@ All screens, modals and key states the product needs, built from `claude/product
 The central screen. One shared layout with four areas:
 - **Top toolbar:** undo, redo, save status (auto-save), zoom out / zoom level / zoom in, fit page, toggle alignment guides, export page, export notebook, previous / next page, page number, back to notebook.
 - **Left sidebar:** search plus tabs for Stickers, Washi Tapes, Backgrounds, Paper, Text, Uploaded Images, Recent Assets. Each tab is a grid of draggable assets, with an upload button in Uploads.
-- **Main canvas:** the fixed-size page, square-cornered like real paper, centred on a slightly darker surround. Freeform placement.
+- **Main canvas:** the fixed-size page, square-cornered like real paper, centred on a slightly darker surround. Freeform placement. Drawn with React-Konva; page coordinates use logical units with a true A5 ratio (1 : √2).
 - **Right properties panel:** changes with the selection (see 4.1–4.5).
 - **Contextual image toolbar:** a floating bar shown only when an image or sticker is selected.
 
@@ -299,7 +306,7 @@ The same studio shell as the Sticker Studio: a large tape preview laid across a 
 ## 8. System patterns and shared screens
 
 ### 8.1 Global navigation
-- A left rail or top bar on all non-editor pages: Dashboard, Notebooks, Sticker Studio, Washi Studio, Asset Library, then account menu. The editor hides it to keep the focus on the page, with a back button in the toolbar instead.
+- A 248 px left rail on all non-editor pages: Dashboard, Notebooks (opens the notebook list, 3.0), Sticker Studio, Washi Studio, Asset Library, then the account menu. The editor hides it to keep the focus on the page, with a back button in the toolbar instead.
 
 ### 8.2 Empty states
 - One pattern used everywhere: illustration, handwritten title, one line of plain explanation, one primary action.
@@ -321,7 +328,7 @@ The same studio shell as the Sticker Studio: a large tape preview laid across a 
 ## 9. Suggested design order
 
 Follow the roadmap phases so each batch of screens is usable on its own:
-1. **Phase 1:** global navigation, sign in / create account, dashboard (filled + empty), create notebook, notebook workspace, page overview.
+1. **Phase 1:** global navigation, sign in / create account, dashboard (filled + empty), notebook list, create notebook, notebook workspace, page overview.
 2. **Phase 2:** journal editor shell, nothing selected, image selected, text selected, background picker, layers, save status.
 3. **Phase 3:** the three crop modes, selection actions, upload states.
 4. **Phase 4:** Sticker Studio steps, sticker library, save as sticker, asset library.

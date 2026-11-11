@@ -124,6 +124,8 @@ Green or Jasper
 • Never go below 14 px for interface text.
 • Handwriting fonts are not used for labels, instructions or anything the user must read to complete a task.
 • Text on Green panels is Light Yellow or, at heading sizes, Golden Yellow.
+• Anything placed on a Green panel sets its own text colour rather than inheriting it, so a cream card on Green still shows Green text.
+• When a row turns Green because it is selected, Green icons or thumbnails inside it get a Golden Yellow or Light Yellow background so they stay visible.
 4. Spacing, Shape and Elevation
 Spacing runs on a 4 px base so panels, handles and toolbars line up with the editor canvas.
 Token
@@ -211,7 +213,7 @@ Icons — outline style, 2 px stroke, Green by default, Jasper only for destruct
 Focus — every interactive element shows a visible 3 px Golden Yellow focus ring with a Green inner edge, so focus is visible on both light and green surfaces.
 Die-cut stickers — the border must follow the cut-out's silhouette, built from the image's transparency (alpha), for example by dilating the alpha channel or with an SVG feMorphology filter. A box-shadow or stacked shadows on the image follow its rectangle instead and draw a white square. The soft drop shadow can use filter: drop-shadow(), which does follow the silhouette. The Pencil mockups show the border as a white rounded backing only because the design tool can't do this.
 Transparency previews — anything that shows a transparent cut-out (the before/after split, the sticker preview, the save-as-sticker modal) sits on its own opaque background, cream plus the checkerboard, so layers underneath never show through the transparent pixels.
-Crop boundary — the dashed line is a real dashed stroke (stroke-dasharray: 9 6) with square handles, so crop mode never looks like normal selection, which has round handles.
+Crop boundary — the dashed line is a real dashed stroke (CSS/SVG stroke-dasharray: 9 6; on the React-Konva canvas dash: [9, 6]) with square handles, so crop mode never looks like normal selection, which has round handles.
 Illustrations — use the empty-state illustration at its native size (300 × 220) or export it at the size needed. Don't squeeze it into a smaller box, which crops it instead of scaling it.
 Full component specs are in design system/components.md.
 6. Design Tokens

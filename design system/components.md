@@ -2,7 +2,7 @@
 
 How to build the UI components for the app. The rules come from `design system/claude.md` (tokens and visual rules). The screen list comes from `design system/screens.md`. You can see every component in use in `design system/junkie.pen`: the **Components** board holds the reusable pieces, and Areas 1–8 hold the 55 screens (numbers like **4.2** below point to those screens).
 
-Framework-agnostic: names are suggestions, props are written in TypeScript-ish form, and all styling uses the CSS custom properties from section 6 of `claude.md`.
+Implemented in React 19 + TypeScript with CSS Modules in `frontend/junk-journal/src/components/` (folder layout in `claude/technical-claude.md` §2). Import everything from `src/components/index.ts`; shared constants live in `src/components/constants.ts`, never in component files. All styling uses the CSS custom properties from section 6 of `claude.md`, defined in `src/index.css`. The journal editor's canvas is drawn with **React-Konva**; the DOM canvas components below (Page, PageElement, SelectionBox and the crop overlays) are visual stand-ins until the Konva versions exist.
 
 ---
 
@@ -17,6 +17,8 @@ Framework-agnostic: names are suggestions, props are written in TypeScript-ish f
 7. **Handwriting font** (`--font-accent`) is decoration only: greetings, notebook cover titles, empty-state titles. Never use it on labels, buttons or instructions.
 8. **One primary button per view.**
 9. **Motion.** 120–180 ms ease-out for hover and press. Pressed buttons move `translateY(1px)`. Respect `prefers-reduced-motion`.
+10. **Set your own text colour on Green.** A component placed on a Green panel must set its own text colour instead of inheriting one (a cream label inside a cream card on a Green panel vanished this way).
+11. **Selected rows on Green.** When a row turns Green because it's selected, any Green icon or thumbnail inside it needs a Golden Yellow or cream background, or it disappears.
 
 ### Derived and content tokens
 
@@ -114,7 +116,7 @@ Pill shape, padding `6px 14px`, **1 px** Green border, cream fill, an 8 px Golde
 Inline key label for shortcuts: padding `2px 8px`, radius 6, a 1 px Green border with a 3 px bottom edge, 14 bold text. Used in 4.17.
 
 ### 1.12 Link
-14–16 px, bold, underlined, Green. Use it for in-flow actions like "Forgot password?", "See all notebooks" or "Clear filters". Never use Jasper for links.
+14–16 px, bold, underlined, Green. Use it for in-flow actions like "Forgot password?", "See all notebooks" or "Clear filters". Never use Jasper for links. For navigation, render a real `<a href>` and pass the `useLinkProps()` handler so it navigates inside the app while Ctrl/⌘-click still opens a new tab.
 
 ---
 
@@ -292,11 +294,13 @@ Two columns:
 
 ### 6.3 CanvasArea and Page
 - **CanvasArea:** `--canvas-surround` fill, clips its content, centres the page, and handles zoom and pan.
-- **Page:** fixed paper size (A5 shown at 560 × 720), square corners, paper fill plus a pattern layer (lined, grid, dotted and so on), a 1 px 25% Green edge and `--shadow-md`.
+- **Page:** fixed paper size with a true A5 ratio (1 : √2; logical units such as 1200 × 1697, scaled to fit the canvas area), square corners, paper fill plus a pattern layer (lined, grid, dotted and so on), a 1 px 25% Green edge and `--shadow-md`.
+- **React-Konva:** the editor draws the page as a Konva `Stage` with separate `Layer`s for the background, elements, freehand strokes and the selection Transformer. Positions are stored in logical page units, never screen pixels. Sidebar drops convert the pointer with `stage.setPointersPositions(e)` and `getRelativePointerPosition()`. The DOM `Page` / `PageElement` stay for thumbnails and the dev gallery.
 - Page elements are positioned absolutely and can be rotated. Each element is its own **instance** with its own transform, opacity, crop and z-index. Editing one never changes the library asset or other instances.
 - **TwoPageSpread** (4.16): the side panels collapse to the TabRail, two pages sit side by side with a spine shadow between them, a page-curl corner turns the page, and a floating spread nav sits at the bottom.
 
 ### 6.4 SelectionBox and handles
+In the Konva editor this is a styled `Transformer`: `borderStroke` Green, `anchorFill` Golden Yellow, `anchorStroke` Green, round anchors, `keepRatio` on by default, and only the two end anchors for washi tape. The DOM `SelectionBox` is the visual reference.
 - **Box:** a 2 px Green outline around the element's bounds.
 - **Resize handles:** 14 px circles at the four corners, Golden Yellow fill with a 2 px Green outline. The handle being dragged turns **Green**.
 - **Rotate handle:** a 16 px circle above the top-centre on a 28 px stem. Show the angle in a small tooltip while rotating.
@@ -315,6 +319,7 @@ A floating pill: cream, 2 px Green border, `--shadow-md`, padding 6. Contains ic
 A Green pill at the top-centre of the canvas, with a Golden Yellow icon and cream 14 semibold text, for example "Crop mode · editing the crop, not the photo" or "Drawing · Esc to finish". It shows whenever the editor is in a mode other than Select. Esc leaves the mode.
 
 ### 6.7 CropOverlay
+In the Konva editor, crops and lasso/polygon selections are applied with `clipFunc` on the element's `Group`; the overlays below define how they look while editing.
 - **Normal crop:** dim everything outside the crop to 50% dark green, show rule-of-thirds lines at 60% cream, a 3 px **dashed** Green boundary (`stroke-dasharray: 9 6`), and **square** 14 px Golden Yellow handles at the corners and edge midpoints. The square handles keep it visibly different from the round selection handles.
 - **Lasso selection:** the live path while drawing. Once closed: 25% yellow fill, a Green dashed outline (animate the dash offset for marching ants), and a cream halo for contrast.
 - **Polygon selection:** straight Green segments, 12 px cream square anchors, and a dashed rubber-band line to the cursor. The **start anchor** is an 18 px Golden Yellow circle; on hover it shows a "Click to close" pill.
@@ -344,7 +349,7 @@ Element actions are pinned to the bottom: Duplicate (secondary) and Delete (dest
 
 ### 6.10 LayerList
 Rows from the top layer down. Each row: a grip, a 28 px thumbnail with a type icon, the name, a lock toggle and a visibility toggle.
-- **Selected row:** Green fill, cream text.
+- **Selected row:** Green fill, cream text; the type thumbnail switches to a Golden Yellow background so its Green icon stays visible.
 - **Dragged row:** cream with a 2 px Green border, `--shadow-lg` and a slight tilt.
 - **Drop line:** a 4 px Golden Yellow bar.
 - Clicking a row selects that element on the canvas, and the reverse. The background row is always last and locked.
@@ -390,12 +395,14 @@ A split preview with a 4 px Green divider and a 48 px Golden Yellow drag knob (`
 Renders a transparent cut-out with a die-cut border that follows the subject's silhouette. In the app, build the border from the alpha channel: dilate it (canvas or WebGL), or use SVG `feMorphology dilate` on the alpha, filled with the border colour. Then draw the cut-out on top and add a soft drop shadow (`filter: drop-shadow()`, which does follow alpha).
 - Props: `src`, `borderWidth`, `borderColor`, `borderOpacity`, `shadow {blur, opacity, distance, angle}`, `rotation`.
 - *The Pencil mockups show the border as a white rounded backing, because the design tool can't dilate alpha. Build the silhouette version described here.*
+- The studios use the SVG version (`DieCutSticker`). On the Konva canvas, generate the bordered sticker once on an offscreen canvas (dilate the alpha, fill with the border colour, draw the cut-out on top) and place the result as a Konva `Image` with a Konva shadow.
 - Used in 5.4, 5.5, 5.6 and the editor stickers.
 
 ### 7.5 WashiTape
 Renders a tape at any length: a base colour, then a **repeating** pattern tile (CSS `background-repeat: repeat-x` or an SVG `<pattern>`, never stretched), then an optional paper-grain texture, then the edge mask.
 - Edge styles are an SVG mask on both ends: `straight`, `torn` (zigzag), `uneven` (irregular) and `scalloped`.
 - Default opacity is about 0.9, so content underneath shows through like real tape.
+- On the Konva canvas, draw one pattern tile to a small canvas and use it as `fillPatternImage` with `fillPatternRepeat: 'repeat-x'` on a `Rect`, clipped to the edge shape; Konva can't render the SVG `WashiTape` directly.
 - Props: `pattern` (solid, dots, stripes, gingham, grid, check, florals, hand-drawn, vintage, or a user image), `baseColor`, `patternColor`, `scale`, `width`, `length`, `edge`, `opacity`, `rotation`, `texture`, and `imageMode: 'repeat' | 'scale'`.
 - Used in 6.x, 4.3, the library tiles and the dashboard.
 

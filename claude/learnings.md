@@ -36,7 +36,7 @@
 - **tsconfig uses `verbatimModuleSyntax`:** type-only imports must use `import type`, and don't use the `React.` namespace without importing it. Import `CSSProperties` and `RefObject` directly.
 
 ## 2026-11-11 — Building the screens: contradictions between the reference docs
-These need a decision; the screens use the choice noted after each one.
+The screens use the choice noted after each one. **Status (2026-11-11): all items below are now reflected in the reference documents**; see "Reference documents updated" at the end of this list.
 1. **Component folder structure.** technical-claude.md §2 wants `components/{common, navigation, notebook, editor, sticker, washi-tape, image-editor}`. The existing components are in `{primitives, feedback, overlays, shell, cards, editor, studio, auth}`. *Choice:* left them as they are, because guideline 9 says to explain before replacing an implementation. A possible mapping: primitives/feedback/overlays/auth → common, shell → navigation, NotebookCard/PageThumbnail → notebook, crop/lasso/polygon overlays + CropBar + BeforeAfter → image-editor, DieCutSticker/StickerTile → sticker, WashiTape/PatternPicker/TapeCard → washi-tape.
 2. **Missing feature folders.** technical-claude.md lists six features but has no home for the account screens (1.1–1.5) or the system pages (8.5 not found, 8.6 recovery). *Choice:* added `features/account/`, `features/system/` and `features/shared/` (shared layout, mock artwork).
 3. **"Don't generate the entire application in one response"** (technical-claude.md guideline 11) vs the request to add all screens at once. *Choice:* built them one area at a time, type-checking and screenshotting after each. The screens are UI only with mock data: no routing, no API, no real canvas logic.
@@ -46,16 +46,38 @@ These need a decision; the screens use the choice noted after each one.
    - screens.md and the mockups say A5 (148 × 210 mm, about 1:1.41).
    - The Pencil mockups draw the page at 560 × 720 (7:9), which matches neither.
    - *Choice:* mock pages use 560 × 720 to match the mockups. This needs one agreed logical size before the editor is built for real.
+   - **Decided 2026-11-11:** use a **true A5 ratio** (1 : √2, about 1 : 1.414) for logical page units, for example 1200 × 1697. Canvas library decided at the same time: **React-Konva** (konva 10.9.1, react-konva 19.3.2, use-image 1.1.x).
 6. **Data model gaps** (technical-claude.md §4 vs screens.md):
    - **Notebook:** screens 3.1/3.4 set a *default page background* and a creation date, but the Notebook table has no default-background field (`background_config` is only on JournalPage).
    - **WashiTapeAsset:** has one `color` and a `pattern_image`, but the pattern creator (6.2) needs a pattern type, a base colour, a pattern colour, scale and a texture flag.
    - **Collections:** they appear everywhere in the Asset Library (7.1–7.5) and the sticker library, but there is no Collection table and no many-to-many link.
    - *Choice:* the frontend types in `src/types/index.ts` include these fields, so the backend model needs to catch up.
-7. **Canvas library not chosen** (React-Konva vs Fabric.js). *Choice:* the editor screens use the DOM-based `Page` / `PageElement` / `SelectionBox` components as visual stand-ins. Swap them for the chosen canvas library when the editor logic is built.
+7. **Canvas library not chosen** (React-Konva vs Fabric.js). *Choice:* the editor screens use the DOM-based `Page` / `PageElement` / `SelectionBox` components as visual stand-ins. Swap them for the chosen canvas library when the editor logic is built. **Decided 2026-11-11: React-Konva.**
 8. **3.1 Create notebook:** the screen map in screens.md says "Modal (multi-step)" but the details say "multi-step or single long form". *Choice:* a single form with a live preview, matching the Pencil mockup.
-9. **"Notebooks" nav item:** the NavRail has a Notebooks destination, but screens.md has no notebooks-list page (the dashboard's "All notebooks" covers it). *Decide in routing:* point it at the dashboard's list or add a list page.
+9. **"Notebooks" nav item:** the NavRail has a Notebooks destination, but screens.md has no notebooks-list page (the dashboard's "All notebooks" covers it). **Decided in routing:** `/notebooks` is its own list page (now screen 3.0).
 10. **8.1 navigation, 8.2 empty states and 8.4 toasts are patterns, not screens.** They're built into every screen (AppPage, EmptyState, ToastProvider), so the screen catalogue has no separate entry for them. 8.3 loading is `DashboardScreen state="loading"`.
 11. **No real photos in the repo.** Pages and libraries show `MockPhoto` placeholders (tinted blocks with an image icon), and sticker previews use icon die-cuts. The save-as-sticker preview and the uploaded washi pattern borrow the empty-state illustration.
+
+**Reference documents updated (2026-11-11)** so every doc matches these decisions:
+- **technical-claude.md:**
+  - §1: React 19, React Router 8, Lucide, React-Konva (item 7).
+  - §2: the actual folder tree with account / system / shared / routes, the components grouping with its mapping to the original plan (items 1–2), and a Routes table that includes the notebook list (item 9).
+  - §2 canvas paragraph: React-Konva specifics.
+  - §3: SPA fallback for hosting.
+  - §4: nine tables, adding Notebook.default_background_config, the washi pattern fields, Collection and CollectionItem (item 6).
+  - §5: ink `#2E2A26` (item 4).
+  - §7.1: A5 ratio (item 5).
+  - §7.2: React-Konva clipping.
+- **product-claude.md §5:** the design-system palette replaces the pastel suggestion, plus the stand-in typefaces and a "Notebooks" list page.
+- **screens.md:**
+  - New 3.0 Notebook list (item 9); 3.1 is a single form with a live preview (item 8).
+  - 8.1 is a 248 px left rail; the canvas uses React-Konva and A5 units.
+  - A pointer to the routes table.
+- **components.md:**
+  - Implementation location, `constants.ts`, React-Konva notes for Page, Transformer, crop clipFunc, die-cut and washi tape.
+  - Two new ground rules (own text colour on Green, selected rows on Green), a `useLinkProps` note on TextLink, and the selected LayerList thumbnail.
+- **design system/claude.md:** the same two Green-panel rules, plus the Konva `dash: [9, 6]` for the crop boundary.
+- **Item 3** (step-by-step building) was a way of working, not a document conflict, so nothing changed. **Items 10–11** describe the mock prototype and need no doc change.
 
 ## 2026-11-11 — Mistakes while building the screens (fixed)
 - **Inline span as a sized box:** `MiniPage` was a `<span>` with width/height 100%, so the page-thumbnail sketches didn't show. Give it `display: block`.
