@@ -1,0 +1,143 @@
+/* Feedback — components.md §2 */
+
+/* ---------- Toast ---------- */
+.toastRegion {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-3);
+  width: min(520px, calc(100vw - 32px));
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--color-green);
+  background: var(--color-cream);
+  color: var(--color-green);
+  box-shadow: var(--shadow-lg);
+  font: var(--text-small);
+  animation: toastIn var(--duration-base) var(--ease-out);
+}
+.toast p { flex: 1; }
+.toastSuccess { background: var(--color-green); color: var(--color-cream); border-color: var(--color-green); }
+.toastSuccess .toastIcon { color: var(--color-yellow); }
+.toastError { border-color: var(--color-red); }
+.toastError .toastIcon { color: var(--color-red); }
+.toastIcon { flex: none; }
+.toastAction {
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-green);
+  background: transparent;
+  color: inherit;
+  font: var(--text-label);
+  font-weight: 700;
+}
+.toastSuccess .toastAction { background: var(--color-yellow); border-color: var(--color-yellow); color: var(--color-green); }
+.toastClose {
+  display: inline-flex;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  border-radius: var(--radius-pill);
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Banner ---------- */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  border: var(--border-width) solid var(--color-green);
+  background: var(--color-cream);
+}
+.bannerError { border-color: var(--color-red); }
+.bannerError .bannerIcon { color: var(--color-red); }
+.bannerIcon { flex: none; margin-top: 2px; }
+.bannerBody { flex: 1; display: flex; flex-direction: column; gap: var(--space-1); }
+.bannerTitle { font: var(--text-body); font-weight: 700; }
+.bannerText { font: var(--text-small); }
+
+/* ---------- Tip ---------- */
+.tip {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-input);
+  background: var(--surface-tint);
+  font: var(--text-small);
+}
+.tip svg { flex: none; }
+
+/* ---------- SaveStatusPill ---------- */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-green);
+  font: var(--text-label);
+  white-space: nowrap;
+}
+.statusOffline { background: var(--surface-tint); }
+.statusFailed { border: var(--border-width) solid var(--color-red); }
+.statusFailed .statusIcon { color: var(--color-red); }
+.statusSpin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.statusRetry {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-green);
+  font: var(--text-label);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* ---------- Skeleton ---------- */
+.skeleton {
+  display: block;
+  background: color-mix(in srgb, var(--color-green) 12%, transparent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: 0.55; } }
+
+/* ---------- ProgressBar ---------- */
+.progress { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.progressHead { display: flex; justify-content: space-between; font: var(--text-small); }
+.progressHead strong { font-weight: 700; }
+.track { height: 8px; border-radius: 4px; background: var(--divider); overflow: hidden; }
+.trackSm { height: 6px; }
+.fill { height: 100%; border-radius: inherit; background: var(--color-green); transition: width var(--duration-base) var(--ease-out); }
+
+/* ---------- EmptyState ---------- */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  text-align: center;
+}
+.emptyArt { width: 300px; height: 220px; }
+.emptyAccent { font: var(--text-accent); font-size: 32px; color: var(--accent); }
+.emptyTitle { font: var(--text-h1); }
+.emptyBody { max-width: 460px; font: var(--text-body); }
+.emptyActions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); margin-top: var(--space-2); }
+.emptySecondary { display: flex; align-items: center; gap: var(--space-3); font: var(--text-small); }

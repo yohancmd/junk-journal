@@ -1,0 +1,302 @@
+/* Primitives — components.md §1 */
+
+/* ---------- Button ---------- */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid transparent;
+  font: var(--text-label);
+  white-space: nowrap;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+.button:active:not(:disabled) { transform: translateY(1px); }
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
+.full { width: 100%; }
+
+.primary { background: var(--color-green); color: var(--color-cream); }
+.primary:hover:not(:disabled) { background: var(--color-green-dark); }
+
+.secondary { background: var(--color-cream); color: var(--color-green); border-color: var(--color-green); }
+.secondary:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--color-green); }
+
+.destructive { background: var(--color-cream); color: var(--color-green); border-color: var(--color-red); }
+.destructive .buttonIcon { color: var(--color-red); }
+.destructive:hover:not(:disabled) { box-shadow: inset 0 0 0 1px var(--color-red); }
+
+.buttonIcon { flex: none; }
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- IconButton ---------- */
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-green);
+  background: var(--color-cream);
+  color: var(--color-green);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.iconButton:hover:not(:disabled) { background: var(--surface-tint); }
+.iconButton:disabled { opacity: 0.5; cursor: not-allowed; }
+.iconButtonSm { width: 32px; height: 32px; }
+.iconButtonActive { background: var(--color-green); color: var(--color-cream); }
+.iconButtonActive:hover:not(:disabled) { background: var(--color-green-dark); }
+.iconButtonDanger { color: var(--color-red); }
+.iconButtonOnBrand { background: transparent; border-color: var(--color-cream); color: var(--color-cream); }
+
+/* ---------- TextField / SelectField ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fieldLabel { font: var(--text-label); }
+.control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 12px;
+  border: var(--border-width) solid var(--border-default);
+  border-radius: var(--radius-input);
+  background: var(--bg-surface);
+  color: var(--text-default);
+}
+.control:focus-within {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-inner-width);
+}
+.controlError { border-color: var(--color-red); }
+.input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: var(--text-body);
+  color: inherit;
+  outline: none;
+  box-shadow: none !important;
+}
+.input::placeholder { color: color-mix(in srgb, var(--color-green) 60%, transparent); }
+.select { appearance: none; cursor: pointer; }
+.fieldIcon { flex: none; }
+.fieldIconError { flex: none; color: var(--color-red); }
+.inlineButton {
+  display: inline-flex;
+  padding: 2px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-green);
+}
+.helper { font: var(--text-small); }
+
+/* ---------- Checkbox ---------- */
+.checkbox { display: inline-flex; align-items: center; gap: var(--space-2); font: var(--text-small); cursor: pointer; }
+.checkboxInput { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.checkboxBox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: var(--border-width) solid var(--color-green);
+  background: var(--color-cream);
+  color: var(--color-cream);
+}
+.checkboxInput:checked + .checkboxBox { background: var(--color-green); }
+.checkboxInput:focus-visible + .checkboxBox {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-inner-width);
+}
+
+/* ---------- Toggle ---------- */
+.toggleRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); width: 100%; }
+.toggleLabel { font: var(--text-label); }
+.switch {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  width: 44px;
+  height: 24px;
+  padding: 2px;
+  border-radius: var(--radius-pill);
+  border: var(--border-width) solid var(--color-green);
+  background: var(--color-cream);
+  transition: background var(--duration-base) var(--ease-out);
+}
+.switchKnob {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-green);
+  transition: transform var(--duration-base) var(--ease-out), background var(--duration-base);
+}
+.switch[aria-checked='true'] { background: var(--color-green); }
+.switch[aria-checked='true'] .switchKnob { background: var(--color-yellow); transform: translateX(20px); }
+
+/* ---------- Slider ---------- */
+.slider { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.sliderHead { display: flex; justify-content: space-between; font: var(--text-small); }
+.sliderHead label { font-weight: 700; }
+.range {
+  --pct: 50%;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--color-green) var(--pct), var(--divider) var(--pct));
+}
+.range::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--color-green) var(--pct), var(--divider) var(--pct));
+}
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--color-yellow);
+  border: var(--border-width) solid var(--color-green);
+}
+.range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-yellow);
+  border: var(--border-width) solid var(--color-green);
+}
+
+/* ---------- NumberField ---------- */
+.number {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: 10px;
+  background: var(--color-cream);
+  font: var(--text-small);
+}
+.number:focus-within { outline: var(--focus-ring-width) solid var(--focus-ring); outline-offset: var(--focus-inner-width); }
+.numberLabel { font-weight: 700; opacity: 0.7; cursor: ew-resize; user-select: none; }
+.numberInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  text-align: right;
+  font: var(--text-small);
+  color: inherit;
+  outline: none;
+  box-shadow: none !important;
+  -moz-appearance: textfield;
+}
+.numberInput::-webkit-inner-spin-button,
+.numberInput::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.numberUnit { opacity: 0.7; }
+
+/* ---------- SegmentedControl ---------- */
+.segmented {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: var(--radius-pill);
+}
+.segment {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-green);
+  font: var(--text-label);
+  white-space: nowrap;
+}
+.segment[aria-checked='true'] { background: var(--color-green); color: var(--color-cream); }
+
+/* ---------- Tag ---------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 14px;
+  border: 1px solid var(--color-green);
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+  color: var(--color-green);
+  font: var(--text-label);
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+button.tag:hover:not(.tagSelected) { background: var(--surface-tint); }
+.tagSelected { background: var(--color-green); color: var(--color-cream); }
+.tagDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-yellow);
+  border: 1px solid var(--color-green);
+}
+.tagDisabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---------- Swatches ---------- */
+.swatches { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.swatch {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-green) 40%, transparent);
+}
+.swatch[aria-checked='true'] { box-shadow: 0 0 0 3px var(--color-cream), 0 0 0 6px var(--color-green); }
+.swatchDark[aria-checked='true'] { box-shadow: 0 0 0 3px var(--color-cream), 0 0 0 6px var(--color-yellow); }
+
+/* ---------- KeyCap ---------- */
+.keycap {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--color-green);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  background: var(--color-cream);
+  font: var(--text-label);
+  font-weight: 700;
+}
+
+/* ---------- Link ---------- */
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-green);
+  font: var(--text-small);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

@@ -1,111 +1,268 @@
+/* ==========================================================================
+   Digital Junk Journal — Design System
+   Source of truth: design system/claude.md (tokens, rules)
+   Component specs: design system/components.md
+   ========================================================================== */
+
+/* Stand-in typefaces until the real ones are chosen (claude.md §3).
+   Swap them here and in the --font-* tokens only. */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Courier+Prime:wght@400;700&family=Fraunces:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Colour — the four palette colours */
+  --color-green: #007633;   /* La Salle Green */
+  --color-yellow: #FFDD00;  /* Golden Yellow */
+  --color-cream: #FFFCE1;   /* Light Yellow */
+  --color-red: #D84040;     /* Jasper */
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Derived (never add other solid colours) */
+  --color-green-dark: #00652B;  /* primary button hover */
+  --scrim: rgba(0, 61, 26, 0.55);  /* behind modals and drawers */
+  --surface-tint: color-mix(in srgb, var(--color-yellow) 20%, transparent);  /* drop zones, tips, hover rows */
+  --canvas-surround: color-mix(in srgb, var(--color-green) 8%, var(--color-cream));  /* editor area around the page */
+  --divider: color-mix(in srgb, var(--color-green) 20%, transparent);
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  /* Content colours (on pages only, exempt from the UI palette) */
+  --paper-white: #FFFEF6;
+  --color-ink: #2E2A26;  /* typed text and pen on pages */
+
+  /* Semantic roles */
+  --bg-page: var(--color-cream);
+  --bg-surface: var(--color-cream);
+  --bg-brand: var(--color-green);
+  --bg-highlight: var(--color-yellow);
+  --text-default: var(--color-green);
+  --text-on-brand: var(--color-cream);
+  --text-on-brand-large: var(--color-yellow);
+  --border-default: var(--color-green);
+  --accent: var(--color-red);
+  --focus-ring: var(--color-yellow);
+
+  /* Typography — families (stand-ins) */
+  --font-ui: 'Nunito Sans', system-ui, sans-serif;
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-accent: 'Caveat', cursive;
+  --font-mono-paper: 'Courier Prime', ui-monospace, monospace;  /* typewriter text on pages */
+
+  /* Typography — scale (size / line height), claude.md §3 */
+  --text-display: 700 40px/48px var(--font-heading);
+  --text-h1: 700 28px/36px var(--font-heading);
+  --text-h2: 600 20px/28px var(--font-ui);
+  --text-body: 400 16px/24px var(--font-ui);
+  --text-small: 400 14px/20px var(--font-ui);
+  --text-label: 600 14px/20px var(--font-ui);
+  --text-accent: 400 24px/32px var(--font-accent);
+
+  /* Spacing (4 px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Shape */
+  --radius-pill: 999px;
+  --radius-card: 16px;
+  --radius-input: 12px;
+  --border-width: 2px;
+
+  /* Elevation — soft and warm, never gray */
+  --shadow-sm: 0 1px 2px rgba(0, 118, 51, 0.15);
+  --shadow-md: 0 4px 12px rgba(0, 118, 51, 0.18);
+  --shadow-lg: 0 12px 28px rgba(0, 118, 51, 0.22);
+
+  /* Focus — 3 px Golden Yellow ring with a Green inner edge */
+  --focus-ring-width: 3px;
+  --focus-inner-width: 2px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+
+  /* Base */
+  font: var(--text-body);
+  color: var(--text-default);
+  background: var(--bg-page);
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+/* --------------------------------------------------------------------------
+   2. Base elements
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  min-height: 100svh;
+  background: var(--bg-page);
+  color: var(--text-default);
 }
 
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Headings map to the type scale: h1 = Display, h2 = Heading 1, h3 = Heading 2 */
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
+h2,
+h3,
+h4,
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+h1 {
+  font: var(--text-display);
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+h2 {
+  font: var(--text-h1);
+}
+
+h3,
+h4 {
+  font: var(--text-h2);
+}
+
+small {
+  font: var(--text-small);
+}
+
+a {
+  color: var(--text-default);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--divider);
+  margin: var(--space-4) 0;
+}
+
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-green);
+}
+
+/* Focus ring on every interactive element */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-inner-width);
+  box-shadow: 0 0 0 var(--focus-inner-width) var(--color-green);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. Type utilities
+   -------------------------------------------------------------------------- */
+.text-display { font: var(--text-display); }
+.text-h1 { font: var(--text-h1); }
+.text-h2 { font: var(--text-h2); }
+.text-body { font: var(--text-body); }
+.text-small { font: var(--text-small); }
+.text-label { font: var(--text-label); }
+
+/* Decorative only: never for labels, instructions or anything needed to finish a task */
+.text-accent { font: var(--text-accent); }
+.text-accent--red { color: var(--accent); }
+
+/* Text on Green panels: Light Yellow, or Golden Yellow at heading sizes */
+.on-brand {
+  background: var(--bg-brand);
+  color: var(--text-on-brand);
+}
+
+.on-brand :is(h1, h2, .text-display, .text-h1) {
+  color: var(--text-on-brand-large);
+}
+
+/* --------------------------------------------------------------------------
+   4. Shared helpers
+   -------------------------------------------------------------------------- */
+
+/* Visually hidden but available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Transparency background for cut-outs. Always opaque, so layers
+   underneath never show through transparent pixels (claude.md §5). */
+.checkerboard {
+  background-color: var(--color-cream);
+  background-image: conic-gradient(
+    color-mix(in srgb, var(--color-green) 6%, transparent) 25%,
+    transparent 0 50%,
+    color-mix(in srgb, var(--color-green) 6%, transparent) 0 75%,
+    transparent 0
+  );
+  background-size: 48px 48px;
+}
+
+/* Paper surface for pages (square corners, like real paper) */
+.paper {
+  background: var(--paper-white);
+  border-radius: 0;
+  box-shadow: var(--shadow-md);
+}
+
+/* --------------------------------------------------------------------------
+   5. Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

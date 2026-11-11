@@ -1,0 +1,91 @@
+/* Account & auth — components.md §8 */
+
+.layout { display: flex; min-height: 100svh; background: var(--bg-page); }
+.formPanel {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-8);
+  width: 640px;
+  max-width: 100%;
+  padding: 48px 96px;
+}
+.brand { display: flex; align-items: center; gap: 10px; font: 700 22px/28px var(--font-heading); }
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-yellow);
+  border: var(--border-width) solid var(--color-green);
+}
+.form { display: flex; flex-direction: column; gap: 20px; }
+.formHead { display: flex; flex-direction: column; gap: 6px; padding-bottom: var(--space-2); }
+.accent { font: 400 28px/32px var(--font-accent); color: var(--accent); }
+.title { font: var(--text-display); }
+.footer { font: var(--text-small); opacity: 0.8; }
+
+/* Decorative collage */
+.collage { position: relative; flex: 1; overflow: hidden; background: var(--color-green); }
+.sheet { position: absolute; left: 15%; top: 12%; width: 62%; height: 72%; background: var(--color-cream); transform: rotate(4deg); box-shadow: var(--shadow-lg); }
+.grid { position: absolute; left: 50%; top: 7%; width: 36%; height: 30%; background: var(--color-yellow); transform: rotate(-8deg); box-shadow: var(--shadow-md); }
+.polaroid {
+  position: absolute;
+  left: 22%;
+  top: 22%;
+  width: 40%;
+  aspect-ratio: 32 / 37;
+  padding: 16px 16px 64px;
+  background: #FFFFFF;
+  transform: rotate(-5deg);
+  box-shadow: var(--shadow-lg);
+}
+.polaroid img, .polaroidBlank { display: block; width: 100%; height: 100%; object-fit: cover; background: var(--color-yellow); }
+.tape1 { position: absolute; left: 18%; top: 20%; width: 150px; height: 36px; background: color-mix(in srgb, var(--color-yellow) 80%, transparent); transform: rotate(28deg); }
+.tape2 { position: absolute; left: 50%; top: 58%; width: 150px; height: 36px; background: color-mix(in srgb, var(--color-red) 70%, transparent); transform: rotate(-20deg); }
+.heart {
+  position: absolute;
+  left: 58%;
+  top: 68%;
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 8px solid #FFFFFF;
+  background: var(--color-yellow);
+  color: var(--color-red);
+  transform: rotate(10deg);
+  box-shadow: var(--shadow-md);
+}
+.handwriting { position: absolute; left: 25%; top: 66%; font: 400 52px/1.1 var(--font-accent); color: var(--color-green); transform: rotate(3deg); white-space: pre-line; }
+
+/* PasswordStrength */
+.strength { display: flex; flex-direction: column; gap: 6px; }
+.bars { display: flex; gap: 6px; }
+.bar { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--color-green) 18%, transparent); }
+.barOn { background: var(--color-green); }
+.strengthLabel { font: var(--text-label); }
+
+/* DangerZone */
+.danger {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: var(--border-width) solid var(--color-red);
+  border-radius: var(--radius-card);
+  background: var(--color-cream);
+}
+.dangerHead { display: flex; align-items: center; gap: var(--space-2); font: var(--text-h2); }
+.dangerHead svg { color: var(--color-red); }
+.dangerBody { font: var(--text-small); }
+
+@media (max-width: 960px) {
+  .collage { display: none; }
+  .formPanel { width: 100%; padding: 32px 24px; }
+}

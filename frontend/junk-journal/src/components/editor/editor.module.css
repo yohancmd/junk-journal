@@ -1,0 +1,310 @@
+/* Journal editor — components.md §6 */
+
+.editor { display: flex; flex-direction: column; height: 100svh; background: var(--bg-page); }
+.editorBody { flex: 1; min-height: 0; display: flex; }
+
+/* ---------- EditorToolbar (§6.1) ---------- */
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 64px;
+  padding: 0 var(--space-4);
+  background: var(--color-cream);
+  border-bottom: var(--border-width) solid var(--color-green);
+}
+.toolbarSide { flex: 1; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.toolbarEnd { justify-content: flex-end; gap: 10px; }
+.toolbarCenter { display: flex; align-items: center; gap: 2px; }
+.doc { display: flex; flex-direction: column; min-width: 0; }
+.doc strong { font: 700 16px/20px var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc span { font: var(--text-small); }
+.tbButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-green);
+  font: var(--text-label);
+}
+.tbButton:hover:not(:disabled) { background: var(--surface-tint); }
+.tbButton:disabled { opacity: 0.4; cursor: not-allowed; }
+.tbButton[aria-pressed='true'] { background: color-mix(in srgb, var(--color-yellow) 35%, transparent); }
+.tbDivider { flex: none; width: 2px; height: 28px; margin: 0 4px; background: var(--divider); }
+.tbText { padding: 0 6px; font: var(--text-label); font-weight: 700; white-space: nowrap; }
+
+/* ---------- AssetSidebar (§6.2) ---------- */
+.sidebar { flex: none; display: flex; width: 336px; background: var(--color-cream); border-right: var(--border-width) solid var(--color-green); }
+.sidebarCollapsed { width: 100px; }
+.tabRail { flex: none; display: flex; flex-direction: column; gap: 4px; width: 100px; padding: 12px 6px; border-right: 1px solid var(--divider); }
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-green);
+  font: 600 14px/1.2 var(--font-ui);
+}
+.tab:hover { background: var(--surface-tint); }
+.tab[aria-selected='true'] { background: var(--color-green); color: var(--color-cream); }
+.tabPanel { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: var(--space-4); overflow: auto; }
+.panelTitle { font: var(--text-h2); }
+.assetGrid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.assetTile { display: flex; flex-direction: column; gap: 6px; padding: 0; border: 0; background: none; color: var(--color-green); font: var(--text-label); text-align: left; cursor: grab; }
+.assetTilePreview {
+  display: grid;
+  place-items: center;
+  height: 92px;
+  overflow: hidden;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: var(--radius-card);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- CanvasArea & Page (§6.3) ---------- */
+.canvas { position: relative; flex: 1; min-width: 0; overflow: auto; background: var(--canvas-surround); display: grid; place-items: center; padding: var(--space-12) var(--space-6); }
+.canvasOverlay { position: absolute; inset: 0; pointer-events: none; }
+.canvasOverlay > * { pointer-events: auto; }
+.page { position: relative; flex: none; overflow: hidden; border: 1px solid color-mix(in srgb, var(--color-green) 25%, transparent); box-shadow: var(--shadow-md); }
+.paper-white { background: #FFFFFF; }
+.paper-cream { background: var(--paper-white); }
+.paper-lined { background: var(--paper-white) repeating-linear-gradient(to bottom, transparent 0 25px, color-mix(in srgb, var(--color-green) 12%, transparent) 25px 26px); background-position: 0 34px; }
+.paper-grid {
+  background-color: var(--paper-white);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-green) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-green) 12%, transparent) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.paper-dotted { background: var(--paper-white) radial-gradient(color-mix(in srgb, var(--color-green) 30%, transparent) 1.5px, transparent 1.6px) 0 0 / 20px 20px; }
+.paper-kraft { background: #C9A27A; }   /* content colour, exempt from UI palette */
+.paper-vintage { background: #F1E3B8; } /* content colour, exempt from UI palette */
+.paper-floral { background: var(--paper-white) radial-gradient(color-mix(in srgb, var(--color-red) 25%, transparent) 3px, transparent 3.5px) 0 0 / 36px 36px; }
+.element { position: absolute; transform-origin: center; }
+.elementSelected { outline: none; }
+
+.spread { display: flex; position: relative; }
+.spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 40px;
+  margin-left: -20px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-green) 20%, transparent), transparent);
+}
+
+/* ---------- SelectionBox (§6.4) ---------- */
+.selection { position: absolute; pointer-events: none; }
+.selectionBox { position: absolute; inset: -6px; border: var(--border-width) solid var(--color-green); }
+.handle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--color-yellow);
+  border: var(--border-width) solid var(--color-green);
+  pointer-events: auto;
+  cursor: nwse-resize;
+}
+.handleActive { background: var(--color-green); }
+.rotateStem { position: absolute; left: 50%; top: -34px; width: 2px; height: 28px; margin-left: -1px; background: var(--color-green); }
+.rotateHandle { top: -40px; left: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; cursor: grab; }
+.lockBadge {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-cream);
+}
+.angleTip { position: absolute; top: -72px; left: 50%; transform: translateX(-50%); padding: 2px 8px; border-radius: var(--radius-pill); background: var(--color-green); color: var(--color-cream); font: var(--text-label); white-space: nowrap; }
+
+/* ---------- FloatingToolbar (§6.5) ---------- */
+.float {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: var(--radius-pill);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-md);
+}
+.floatVertical { flex-direction: column; }
+.fb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-green);
+  font: var(--text-label);
+  white-space: nowrap;
+}
+.fb:hover:not(:disabled) { background: var(--surface-tint); }
+.fb[aria-pressed='true'],
+.fb[aria-checked='true'] { background: var(--color-green); color: var(--color-cream); }
+.fbRatio[aria-checked='true'] { background: var(--color-yellow); color: var(--color-green); }
+.fbDanger { color: var(--color-red); }
+.fbApply { background: var(--color-green); color: var(--color-cream); padding: 0 14px; }
+.fbApply:hover:not(:disabled) { background: var(--color-green-dark); }
+.fbDivider { flex: none; width: 1px; height: 24px; margin: 0 4px; background: color-mix(in srgb, var(--color-green) 25%, transparent); }
+.floatVertical .fbDivider { width: 24px; height: 1px; margin: 4px 0; }
+.fontSelect { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border: 1px solid var(--color-green); border-radius: var(--radius-pill); background: transparent; color: var(--color-green); font: var(--text-small); }
+.fontSelect select { border: 0; background: transparent; color: inherit; font: inherit; outline: none; }
+.colourDot { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 3px solid var(--color-yellow); }
+
+/* ---------- ModeBanner (§6.6) ---------- */
+.banner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--color-green);
+  color: var(--color-cream);
+  box-shadow: var(--shadow-md);
+  font: var(--text-label);
+}
+.banner svg { color: var(--color-yellow); }
+
+/* ---------- Overlays (§6.7) ---------- */
+.overlaySvg { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+.marching { animation: march 0.6s linear infinite; }
+@keyframes march { to { stroke-dashoffset: -14; } }
+.closeTip { position: absolute; padding: 4px 10px; border-radius: var(--radius-pill); background: var(--color-green); color: var(--color-cream); font: var(--text-label); white-space: nowrap; transform: translate(-50%, -150%); }
+
+/* ---------- PropertiesPanel (§6.9) ---------- */
+.props {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 300px;
+  padding: 20px;
+  overflow: auto;
+  background: var(--color-cream);
+  border-left: var(--border-width) solid var(--color-green);
+}
+.propsFooter { display: flex; gap: var(--space-2); margin-top: auto; }
+.propsFooter > * { flex: 1; }
+.propHead { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--divider); }
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--color-yellow);
+  border: var(--border-width) solid var(--color-green);
+}
+.propTitle { font: var(--text-h2); }
+.propSub { font: var(--text-small); }
+.group { display: flex; flex-direction: column; gap: var(--space-2); border: 0; margin: 0; padding: 0; min-width: 0; }
+.groupLabel { padding: 0; font: var(--text-label); font-weight: 700; }
+.row { display: flex; align-items: center; gap: 6px; }
+.iconRow { display: flex; gap: 6px; }
+.iconRow > * { flex: 1; }
+.squareBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border: 1px solid var(--color-green);
+  border-radius: 10px;
+  background: var(--color-cream);
+  color: var(--color-green);
+}
+.squareBtn:hover { background: var(--surface-tint); }
+.squareBtn[aria-pressed='true'] { border-width: 2px; background: color-mix(in srgb, var(--color-yellow) 50%, transparent); }
+
+/* ---------- LayerList (§6.10) ---------- */
+.layers { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.layer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--color-green);
+  font: var(--text-small);
+  cursor: pointer;
+}
+.layer:hover { background: var(--surface-tint); }
+.layer[aria-selected='true'] { background: var(--color-green); color: var(--color-cream); font-weight: 700; }
+.layerDragging { border: var(--border-width) solid var(--color-green); background: var(--color-cream); box-shadow: var(--shadow-lg); transform: rotate(-2deg); }
+.layerName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layerThumb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--color-green);
+  background: var(--surface-tint);
+  color: var(--color-green);
+}
+.layer[aria-selected='true'] .layerThumb { background: var(--color-yellow); }
+.layerGrip { flex: none; opacity: 0.6; cursor: grab; }
+.layerToggle { display: inline-flex; padding: 2px; border: 0; border-radius: 6px; background: transparent; color: inherit; }
+.layerToggleOff { opacity: 0.45; }
+.dropLine { height: 4px; border-radius: 2px; background: var(--color-yellow); border: 1px solid var(--color-green); }
+
+/* ---------- PaperSwatch (§6.11) ---------- */
+.paperSwatch { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; background: none; color: var(--color-green); font: var(--text-small); text-align: left; }
+.paperChip { position: relative; height: 96px; border: 1px solid var(--color-green); box-shadow: var(--shadow-sm); }
+.paperSwatch[aria-checked='true'] .paperChip { border-width: 3px; }
+.paperSwatch[aria-checked='true'] { font-weight: 700; }
+.paperCheck { position: absolute; top: 6px; right: 6px; display: inline-flex; padding: 4px; border-radius: 50%; background: var(--color-green); color: var(--color-cream); }
+
+/* ---------- UploadItem (§6.12) ---------- */
+.upload { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--color-green); border-radius: 12px; }
+.uploadError { border: var(--border-width) solid var(--color-red); }
+.uploadHead { display: flex; align-items: center; gap: var(--space-2); font: var(--text-label); }
+.uploadHead span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uploadError .uploadHead svg { color: var(--color-red); }
+.uploadMsg { font: var(--text-small); }
+
+/* ---------- Dialog bits ---------- */
+.shortcutCols { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.shortcutGroup { display: flex; flex-direction: column; gap: 10px; }
+.shortcutGroup h3 { font: var(--text-body); font-weight: 700; }
+.shortcutRow { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); font: var(--text-small); }
+.keys { display: flex; gap: 4px; }
+.progressBox { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--color-green); border-radius: var(--radius-card); background: var(--surface-tint); }
+.infoBox { display: flex; flex-direction: column; gap: 4px; padding: 14px; border: 1px solid var(--color-green); border-radius: 12px; font: var(--text-small); }
+.infoBox strong { font-weight: 700; }
+.historyBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-yellow);
+  border: var(--border-width) solid var(--color-green);
+}

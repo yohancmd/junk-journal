@@ -34,6 +34,8 @@ Jasper
 Accent, alerts, destructive actions, small emphasis
 The reference image shows La Salle Green as "#07633" and Golden Yellow as "#FFDD0", each one digit short. This doc uses #007633 and #FFDD00, which match the RGB values given for both.
 Proportions — Light Yellow carries most of the screen, Green carries structure and text, Golden Yellow marks the things to notice, and Jasper stays under roughly 5% of any screen.
+Tints and transparency — beyond the four solid colours, use only transparent versions of them, and only for shadows, dividers, scrims, hover rows and soft tints. Build them from the token (for example color-mix(in srgb, var(--color-green) 20%, transparent)) or from the full hex with an alpha channel (#00763333). Never add an alpha suffix to a token name: "--color-green80" is not a colour. Never introduce a new solid colour, such as a gray, a white canvas or an off-palette tint.
+UI colour vs content colour — the palette rules apply to the interface. Paper colours on pages (white, kraft, vintage), user photos, pen ink and anything users upload are content and are exempt.
 2. Color Pairings and Contrast
 Only Green on Light Yellow and Light Yellow on Green clear the WCAG AA bar for body text (4.5:1). Every other pairing is for large text (24 px, or 19 px bold) or non-text UI only. Ratios are calculated from the HEX values and rounded.
 Text
@@ -78,7 +80,7 @@ Rules
 • Jasper text must be paired with an icon or label so meaning never depends on color alone.
 • Do not place Green directly against Jasper.
 3. Typography
-Three type roles carry over from the product requirements: a clean sans-serif for the interface, a serif for editorial headings, and a handwriting face for decorative accents only. Specific typefaces are not chosen yet; pick them once and set them in the font tokens.
+Three type roles carry over from the product requirements: a clean sans-serif for the interface, a serif for editorial headings, and a handwriting face for decorative accents only. Specific typefaces are not chosen yet; pick them once and set them in the font tokens. Until then, the mockups in junkie.pen use these stand-ins: Fraunces (serif headings), Nunito Sans (interface) and Caveat (handwriting). Change them only through the font tokens so every screen updates.
 Style
 Role
 Size / line height
@@ -171,7 +173,7 @@ Hover / active
 Notes
 Primary button
 Green fill, Light Yellow label, pill
-Slightly darker green fill; pressed shifts down 1 px
+Slightly darker green fill (--color-green-dark); pressed shifts down 1 px
 One per view for the main action
 Secondary button
 Light Yellow fill, 2 px Green border, Green label, pill
@@ -207,14 +209,30 @@ n/a
 Clear visual difference from normal selection
 Icons — outline style, 2 px stroke, Green by default, Jasper only for destructive or warning states.
 Focus — every interactive element shows a visible 3 px Golden Yellow focus ring with a Green inner edge, so focus is visible on both light and green surfaces.
+Die-cut stickers — the border must follow the cut-out's silhouette, built from the image's transparency (alpha), for example by dilating the alpha channel or with an SVG feMorphology filter. A box-shadow or stacked shadows on the image follow its rectangle instead and draw a white square. The soft drop shadow can use filter: drop-shadow(), which does follow the silhouette. The Pencil mockups show the border as a white rounded backing only because the design tool can't do this.
+Transparency previews — anything that shows a transparent cut-out (the before/after split, the sticker preview, the save-as-sticker modal) sits on its own opaque background, cream plus the checkerboard, so layers underneath never show through the transparent pixels.
+Crop boundary — the dashed line is a real dashed stroke (stroke-dasharray: 9 6) with square handles, so crop mode never looks like normal selection, which has round handles.
+Illustrations — use the empty-state illustration at its native size (300 × 220) or export it at the size needed. Don't squeeze it into a smaller box, which crops it instead of scaling it.
+Full component specs are in design system/components.md.
 6. Design Tokens
-Centralize every value above as CSS custom properties so components never hardcode colors. Font families are left as placeholders until typefaces are chosen.
+Centralize every value above as CSS custom properties so components never hardcode colors. Font families hold stand-ins until the real typefaces are chosen.
 :root {
   /* Color */
   --color-green: #007633;   /* La Salle Green */
   --color-yellow: #FFDD00;  /* Golden Yellow */
   --color-cream: #FFFCE1;   /* Light Yellow */
   --color-red: #D84040;     /* Jasper */
+
+  /* Derived (used in the mockups; never add other solid colours) */
+  --color-green-dark: #00652B;  /* primary button hover */
+  --scrim: rgba(0, 61, 26, 0.55);  /* behind modals and drawers */
+  --surface-tint: color-mix(in srgb, var(--color-yellow) 20%, transparent);  /* drop zones, tips, hover rows */
+  --canvas-surround: color-mix(in srgb, var(--color-green) 8%, var(--color-cream));  /* editor area around the page */
+  --divider: color-mix(in srgb, var(--color-green) 20%, transparent);
+
+  /* Content colours (on pages only, exempt from the UI palette) */
+  --paper-white: #FFFEF6;
+  --color-ink: #2E2A26;  /* typed text and pen on pages */
 
   /* Semantic roles */
   --bg-page: var(--color-cream);
@@ -229,9 +247,10 @@ Centralize every value above as CSS custom properties so components never hardco
   --focus-ring: var(--color-yellow);
 
   /* Typography */
-  --font-ui: /* sans-serif TBD */ sans-serif;
-  --font-heading: /* serif TBD */ serif;
-  --font-accent: /* handwriting TBD */ cursive;
+  --font-ui: /* TBD, stand-in: Nunito Sans */ "Nunito Sans", sans-serif;
+  --font-heading: /* TBD, stand-in: Fraunces */ "Fraunces", serif;
+  --font-accent: /* TBD, stand-in: Caveat */ "Caveat", cursive;
+  --font-mono-paper: "Courier Prime", monospace;  /* typewriter text on pages */
 
   /* Spacing (4 px base) */
   --space-1: 4px;

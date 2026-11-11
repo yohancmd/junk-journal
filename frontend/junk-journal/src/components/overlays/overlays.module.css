@@ -1,0 +1,133 @@
+/* Overlays — components.md §3 */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--scrim);
+  animation: fade var(--duration-base) var(--ease-out);
+}
+@keyframes fade { from { opacity: 0; } }
+
+/* ---------- Modal ---------- */
+.modalWrap {
+  position: fixed;
+  inset: 0;
+  z-index: 51;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  pointer-events: none;
+}
+.modal {
+  pointer-events: auto;
+  display: flex;
+  max-height: calc(100vh - 48px);
+  width: 100%;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: 24px;
+  background: var(--color-cream);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  outline: none;
+  animation: pop var(--duration-base) var(--ease-out);
+}
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+.modalMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: var(--space-8);
+  overflow: auto;
+}
+.modalHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.modalTitle { font: var(--text-h1); }
+.modalBody { display: flex; flex-direction: column; gap: var(--space-4); }
+.modalFooter { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: auto; padding-top: var(--space-2); }
+.modalAside { flex: none; width: 340px; display: flex; flex-direction: column; }
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: var(--border-width) solid var(--color-green);
+  background: var(--color-cream);
+  color: var(--color-green);
+}
+
+/* ---------- Drawer ---------- */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(480px, 100vw);
+  padding: 28px;
+  border-left: var(--border-width) solid var(--color-green);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+  overflow: auto;
+  animation: slide var(--duration-base) var(--ease-out);
+}
+@keyframes slide { from { transform: translateX(24px); opacity: 0; } }
+.drawerFooter { display: flex; flex-direction: column; gap: var(--space-2); margin-top: auto; padding-top: var(--space-4); }
+
+/* ---------- ConfirmDialog ---------- */
+.confirmHead { display: flex; align-items: center; gap: var(--space-3); }
+.warnBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: var(--border-width) solid var(--color-red);
+  color: var(--color-red);
+}
+
+/* ---------- Menu ---------- */
+.menuAnchor { position: relative; display: inline-flex; }
+.menu {
+  position: absolute;
+  z-index: 40;
+  min-width: 216px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border: var(--border-width) solid var(--color-green);
+  border-radius: var(--radius-card);
+  background: var(--color-cream);
+  box-shadow: var(--shadow-md);
+}
+.menuBottomStart { top: calc(100% + 6px); left: 0; }
+.menuBottomEnd { top: calc(100% + 6px); right: 0; }
+.menuTopStart { bottom: calc(100% + 6px); left: 0; }
+.menuRight { top: 0; left: calc(100% + 8px); }
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-green);
+  font: var(--text-label);
+  text-align: left;
+}
+.menuItem:hover,
+.menuItem:focus-visible { background: var(--surface-tint); }
+.menuItemDanger svg { color: var(--color-red); }
